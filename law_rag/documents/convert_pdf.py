@@ -4,6 +4,7 @@ from marker.config.parser import ConfigParser
 from marker.output import text_from_rendered
 
 from law_rag.config import Settings
+from law_rag.documents.common import save_text
 
 def pdf_to_markdown_convertion() -> None:
     config = {
@@ -14,7 +15,7 @@ def pdf_to_markdown_convertion() -> None:
     config_parser = ConfigParser(config)
 
     converter = PdfConverter(
-        config=config_parser.generate_config_dict(),
+        config = config_parser.generate_config_dict(),
         artifact_dict = create_model_dict(),
         processor_list = config_parser.get_processors(),
         renderer = config_parser.get_renderer(),
@@ -25,13 +26,10 @@ def pdf_to_markdown_convertion() -> None:
     text, _, _ = text_from_rendered(rendered) # text, metadata, images
 
     # Save the markdown text to file
-    with open(
-        file = Settings.documents.path_to_md, 
-        mode = "w+t", 
-        encoding = "utf-8"
-    ) as file:
-        file.writelines(text)
-
+    save_text(
+        texts = text, 
+        save_path = Settings.documents.path_to_md
+    )
 
 
 if __name__ == "__main__":
