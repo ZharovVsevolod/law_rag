@@ -1,0 +1,21 @@
+[project]
+name = "law-rag"
+version = "0.0.1"
+description = "Diploma project with Graph RAG system on Digital Law theme."
+authors = [
+    {name = "Vsevolod",email = "wsewolod@mail.ru"}
+]
+readme = "README.md"
+requires-python = ">=3.12,<4.0"
+dependencies = [
+    "python-dotenv (>=1.0.1,<2.0.0)",
+    "langchain (>=0.3.21,<0.4.0)",
+    "langchain-huggingface (>=0.1.2,<0.2.0)",
+    "neo4j (>=5.28.1,<6.0.0)",
+    "marker-pdf (>=1.6.1,<2.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
