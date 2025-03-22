@@ -1,0 +1,5 @@
+documents:
+  path_to_folder: "docs"
+  path_to_pdf: ${.path_to_folder}/149fz.pdf
+  path_to_html: ${.path_to_folder}/149fz.htm
+  path_to_md: ${.path_to_folder}/149fz.md
