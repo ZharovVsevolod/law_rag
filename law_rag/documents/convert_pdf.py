@@ -6,10 +6,20 @@ from marker.output import text_from_rendered
 from law_rag.config import Settings
 from law_rag.documents.common import save_text
 
-def pdf_to_markdown_convertion() -> None:
+from typing import Optional
+
+def pdf_to_markdown_convertion(
+        input_path: Optional[str] = None,
+        output_path: Optional[str] = None
+    ) -> None:
+    # If paths are not set manually - we get them from the Settings module (config file)
+    if input_path is None:
+        input_path = Settings.documents.path_to_pdf
+    if output_path is None:
+        output_path = Settings.documents.path_to_md
+
     config = {
         "output_format": "markdown",
-        "output_dir": Settings.documents.path_to_folder,
         "languages": "ru"
     }
     config_parser = ConfigParser(config)
@@ -22,13 +32,13 @@ def pdf_to_markdown_convertion() -> None:
         llm_service = config_parser.get_llm_service()
     )
 
-    rendered = converter(Settings.documents.path_to_pdf)
+    rendered = converter(input_path)
     text, _, _ = text_from_rendered(rendered) # text, metadata, images
 
     # Save the markdown text to file
     save_text(
         texts = text, 
-        save_path = Settings.documents.path_to_md
+        save_path = output_path
     )
 
 
