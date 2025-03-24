@@ -1,3 +1,9 @@
+"""
+Some functions for converting documents from one extension to another, like from pdf to markdown.
+
+If you run this python file, it will convert pdf file, specified in the config file, to markdown, and save it in path, specified in the config file.
+"""
+
 from marker.converters.pdf import PdfConverter
 from marker.models import create_model_dict
 from marker.config.parser import ConfigParser
@@ -9,9 +15,23 @@ from law_rag.documents.common import save_text
 from typing import Optional
 
 def pdf_to_markdown_convertion(
-        input_path: Optional[str] = None,
-        output_path: Optional[str] = None
-    ) -> None:
+    input_path: Optional[str] = None,
+    output_path: Optional[str] = None
+) -> None:
+    """Convert pdf file to markdown format via Marker
+    
+    This function will convert pdf file to markdown and save it to another file. 
+    
+    You can specify the input and/or output paths.
+    If you don't, the function will get it from the config file.
+
+    Arguments
+    ---------
+    input_path: Optional[str] = None
+        Path to the pdf file. If it is not specified, path will be pulled from the config file.
+    output_path: Optional[str] = None
+        Path where converted markdown file will be saved. If it is not specified, path will be pulled from the config file.
+    """
     # If paths are not set manually - we get them from the Settings module (config file)
     if input_path is None:
         input_path = Settings.documents.path_to_pdf

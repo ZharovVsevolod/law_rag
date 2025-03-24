@@ -1,6 +1,14 @@
+"""
+The specification and load for the yaml config file. It is using OmegaConf for yaml hierarchical structure.
+
+Most of the time you'll need the `Settings` variable with configuration specification.
+
+You can run this .py file to print the config file and check if it is loaded correctly.
+"""
+
 from pathlib import Path
 from pydantic import BaseModel
-from omegaconf import OmegaConf
+from omegaconf import OmegaConf, DictConfig
 
 import logging
 logger = logging.getLogger(__name__)
@@ -27,7 +35,26 @@ class Config(BaseModel):
 
 
 # Load the yaml config file
-def _load_yaml_config(path: Path):
+def _load_yaml_config(path: Path) -> DictConfig:
+    """Load the yaml config file from the specific path.
+    
+    This function using OmegaConf for yaml hierarchical structure opportunity.
+    
+    Arguments
+    ---------
+    path: Path
+        Path to the .yaml config file
+    
+    Returns
+    -------
+    config: DictConfig
+        The config dictionary
+    
+    Raises
+    ------
+    FileNotFoundError
+        If there is no .yaml config file in provided path
+    """
     try:
         return OmegaConf.load(path)
 
