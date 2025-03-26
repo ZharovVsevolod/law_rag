@@ -22,7 +22,6 @@ config_file = pwd / "config" / "config.yaml"
 class Docs(BaseModel):
     path_to_folder: str
     path_to_pdf: str
-    path_to_html: str
     path_to_md: str
     path_to_md_cleaned: str
 
