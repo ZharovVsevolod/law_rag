@@ -20,9 +20,69 @@ import logging
 logger = logging.getLogger(__name__)
 
 def find_all_markdown_links(
-    md_text: str, 
-    return_cleaned_text: bool = False
+    md_text: str,
+    return_cleaned_text: bool = False,
+    placeholder: Optional[str] = None
 ) -> List[Tuple[str, str]] | Tuple[List[Tuple[str, str]], str]:
+    """Find and return all links in markdown text. Optionally return text without any links (they will be replaced with a placeholder).
+
+    This function will find all links (and text that linked with them) that appear in the provided markdown text. They will be returned as a tuple of 
+    - some text that was referenced to link
+    - the link
+
+    Example 1
+    ---------
+    For example, if we have this text:
+    ```markdown
+    Some [text](www.text.com) that we have like an [example](www.example.com) here.
+    ```
+    
+    after this function call
+    ```pythonreturn_cleaned_text
+    ```
+
+    if will return this:
+    ```python
+    links: List = [
+        "text", "www.text.com",
+        "example", "www.example.com"
+    ]
+    ```
+
+    Example 2
+    ---------
+    Also you can modify the text with some placeholder in place.
+    ```python
+    text = load_markdown_text()
+    links, new_text = find_all_markdown_links(
+        text,
+        return_cleaned_text = True,
+        placeholder = "This link was deleted"
+    )
+    ```
+
+    if will return this `new_text`:
+    ```markdown
+    Some [text](This link was deleted) that we have like an [example](This link was deleted) here.
+    ```
+
+    Arguments
+    ---------
+    md_text: str
+        Some markdown text that need to be modified
+    return_cleaned_text: bool = False
+        If need to return the cleaned text too. Default is *False*
+    placeholder: Optional[str] = None
+        If required, what we need to put in place of deleted link. 
+        If it is *None* and `return_cleaned_text` is *True*, the placeholder will be got from the config file
+    
+    Returns
+    -------
+    links: List[Tuple[str, str]]
+        The list of links that was found in the markdown text
+    cleaned_md_text: Optional[str]
+        The markdown text that was cleaned from the links
+    """
     # Some magic formula. I have got this from this source:
     # https://stackoverflow.com/questions/63197371/detecting-all-links-in-markdown-files-in-python-and-replace-them-with-outputs-of
     INLINE_LINK_RE = re.compile(r'\[([^\]]+)\]\(([^)]+)\)')
@@ -34,20 +94,78 @@ def find_all_markdown_links(
         for _, link in links:
             just_links.append(link)
 
-        cleaned_md_text = remove_links_from_text(
-            md_text,
-            just_links,
+        if placeholder is None:
             placeholder = Settings.data.link_placeholder
-        )
+
+        cleaned_md_text = remove_links_from_text(md_text, just_links, placeholder)
         return links, cleaned_md_text
 
     return links
 
 def remove_links_from_text(
-    md_text: str, 
+    md_text: str,
     links: List[str]| str,
     placeholder: str
 ) -> str:
+    """Remove provided links from the text in the Markdown markup
+    
+    This function will remove the links and will replce them with given placeholder.
+    
+    Example 1
+    -------
+    For example, if we have this text:
+    ```markdown
+    Some [text](www.text.com) that we have like an [example](www.example.com) here.
+    ```
+
+    we can use this function to replace the exact same link as provided to placeholder:
+    ```python
+    text = load_markdown_text()
+
+    new_text = remove_links_from_text(
+        md_text = text,
+        links = ["www.example.com"],
+        placeholder = "This link was deleted"
+    )
+    ```
+
+    so the result will be:
+    ```markdown
+    Some [text](www.text.com) that we have like an [example](This link was deleted) here.
+    ```
+
+    Example 2
+    -------
+    You could give a single link that need to be removed (like in an example) or a list of links
+    ```python
+    text = load_markdown_text()
+
+    new_text = remove_links_from_text(
+        md_text = text,
+        links = ["www.example.com", "www.text.com"],
+        placeholder = "This link was deleted"
+    )
+    ```
+    
+    and the result will be like this as well:
+    ```markdown
+    Some [text](This link was deleted) that we have like an [example](This link was deleted) here.
+    ```
+
+    Arguments
+    ---------
+    md_text: str
+        Some markdown text that need to be modified
+    links: List[str]| str
+        Some links that need to be deleted from the text
+    placeholder: str
+        What we need to put in place of deleted link
+    
+    Returns
+    -------
+    md_text_without_links: str
+        Markdown text without links
+    """
     if type(links) is str:
         links = [links]
     
