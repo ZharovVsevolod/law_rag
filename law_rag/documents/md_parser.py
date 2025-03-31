@@ -192,6 +192,23 @@ def clean_headers(texts: List[str]) -> List[str]:
     
     return texts
 
+def rus_character_to_digit(character: str, skip_some_characters: bool = True) -> int:
+    number = ord(character) - 1071 # because the russian "а" character is 1072
+
+    if skip_some_characters:
+        # the й character - 11th
+        if number > 10:
+            number -= 1
+    
+    else:
+        # the ё character - 7th
+        if number > 6:
+            number += 1
+        if number == 35:
+            number = 7
+
+    return number
+
 def make_headers_for_article(texts: List[str]) -> List[str]:
     """Make new custom headers in the markdown texts of Russian Codex
     
@@ -224,7 +241,13 @@ def make_headers_for_article(texts: List[str]) -> List[str]:
                         case ".":
                             texts[i] = f"## Пункт {digit[:-1]}\n" + text
                         case ")":
-                            texts[i] = f"### Подпункт {digit[:-1]}\n" + text
+                            part = digit[:-1]
+                            # They can also be like а), б), в), г), etc.
+                            if not part.isdigit():
+                                part = rus_character_to_digit(part, skip_some_characters = True)
+                            
+                            texts[i] = f"### Подпункт {part}\n" + text
+            
             except Exception as e:
                 pass
         
