@@ -20,7 +20,12 @@ def get_chunk_specification(document: Document) -> Dict[str, str]:
     
 
     specification["type"] = level
-    specification["number"] = get_chunk_number(document.metadata, level)
+
+    chunk_number, previous, parents = get_chunk_number(document.metadata, level)
+    specification["number"] = chunk_number
+    specification["previous"] = previous
+    specification["parents"] = parents
+    
     specification["text"] = document.page_content
     
     if level != "Article":
@@ -67,7 +72,23 @@ def get_chunk_number(
     if level in ["Subparagraph"]:
         chunk_numbers.append(document_metadata["Subparagraph"].split(" ")[-1])
     
+
+    # Self number
     chunk_number = ".".join(chunk_numbers)
-    return chunk_number
+
+    # Parents
+    parents = []
+    n = len(chunk_numbers)
+    for i in range(2, n):
+        parent_number = ".".join(chunk_numbers[:i])
+        parents.append(parent_number)
 
 
+    # Previous number
+    previous = int(chunk_numbers[-1]) - 1
+    if previous == 0:
+        previous = None
+    else:
+        previous = parents[-1] + f".{previous}"
+
+    return chunk_number, previous, parents
