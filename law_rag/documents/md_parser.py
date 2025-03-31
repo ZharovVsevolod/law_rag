@@ -1,6 +1,7 @@
 """
 Some function for parsing markdown file and preprocess it for the future graph database setup
 """
+import re
 
 from langchain_text_splitters import MarkdownHeaderTextSplitter
 from langchain_core.documents import Document
@@ -13,11 +14,47 @@ from law_rag.documents.common import (
     set_metadata_to_documents
 )
 
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 import logging
 logger = logging.getLogger(__name__)
 
+def find_all_markdown_links(
+    md_text: str, 
+    return_cleaned_text: bool = False
+) -> List[Tuple[str, str]] | Tuple[List[Tuple[str, str]], str]:
+    # Some magic formula. I have got this from this source:
+    # https://stackoverflow.com/questions/63197371/detecting-all-links-in-markdown-files-in-python-and-replace-them-with-outputs-of
+    INLINE_LINK_RE = re.compile(r'\[([^\]]+)\]\(([^)]+)\)')
+
+    links = list(INLINE_LINK_RE.findall(md_text))
+
+    if return_cleaned_text:
+        just_links = []
+        for _, link in links:
+            just_links.append(link)
+
+        cleaned_md_text = remove_links_from_text(
+            md_text,
+            just_links,
+            placeholder = Settings.data.link_placeholder
+        )
+        return links, cleaned_md_text
+
+    return links
+
+def remove_links_from_text(
+    md_text: str, 
+    links: List[str]| str,
+    placeholder: str
+) -> str:
+    if type(links) is str:
+        links = [links]
+    
+    for link in links:
+        md_text = md_text.replace(link, placeholder)
+    
+    return md_text
 
 def clean_headers(texts: List[str]) -> List[str]:
     """Delete markdown header markup (`#`) from the texts
@@ -33,8 +70,7 @@ def clean_headers(texts: List[str]) -> List[str]:
         List of Markdown text without any # symbols
     """
     for i, text in enumerate(texts):
-        if "#" in text:
-            texts[i] = text.replace("#", "")
+        texts[i] = text.replace("#", "")
     
     return texts
 
@@ -58,7 +94,9 @@ def make_headers_for_article(texts: List[str]) -> List[str]:
     """
     for i, text in enumerate(texts):
         if "Статья" in text:
-            texts[i] = "#" + text
+            if text[0] == " ":
+                text = text[1:]
+            texts[i] = "# " + text
         
         else:
             digit = text.split(" ")[0]

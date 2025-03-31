@@ -27,6 +27,8 @@ class Docs(BaseModel):
 
 class Data(BaseModel):
     name: str
+    clean_text_from_links: bool
+    link_placeholder: str
 
 class Config(BaseModel):
     documents: Docs
