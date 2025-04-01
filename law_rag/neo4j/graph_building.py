@@ -1,13 +1,47 @@
+"""There is store sime functions for preparing the chunks (in Langchain Document type) to load in Neo4j graph database"""
+
 from langchain_core.documents import Document
 
 from law_rag.documents.md_parser import find_all_markdown_links
 
 from law_rag.config import Settings
 
-from typing import Dict, Literal
+from typing import Dict, Literal, Tuple, List
 
 
 def get_chunk_specification(document: Document) -> Dict[str, str]:
+    """Define the chunk specification to get some information of the node to set up the Graph Database
+
+    Chunk specification contains this parameters:
+    - **type**: str - type of the node. Can be Article, Paragraph or Subparagraph;
+    - **number**: str - number of the chunk based on it's serial number.  
+        Structure is `<Number of Codex>`.`<Number of Article>`.`<Number of Paragraph>`.`<Number of Subparagraph>` depends on what type is it;
+    - **previous**: str - number of the previous chunk, if it is exists. Otherwise is set to *None*;
+    - **parents**: List[str] - list of numbers of parents (types that higher in the hierarchy);
+    - **text**: str - the main text of the chunk
+    - **has_reference**: bool - if the text contains some markdown links ([some link](www.some-link.com)), 
+        parameter will be set to *True*, otherwise - *False*;
+    - **references**: List[Tuple[str, str]] - if the text contains some markdown links, there will be list of them.  
+        It has tuple structure, like (some_link, www.some-link.com).
+    
+    Metadata of the chunk should have this parameters:
+    - **Codex**: str (but it have to be a number, like "149")
+    - **Article**: str (starts with "**Статья X. ...")
+    - **Paragraph**: str, optional* (starts with "1.", "3.1.", ...)
+    - **Subparagraph**: str, optional* (starts with "1)", "г)", ...)
+
+    \* - depends on the type of the chunk.
+    
+    Arguments
+    ---------
+    document: Document
+        The chunk of Langchain Document type with some metadata
+    
+    Returns
+    -------
+    specification: Dict[str, str]
+        The specification of the given chunk
+    """
     specification = {}
 
     # Find out the Node Type (the level of metadata extraction too)
@@ -18,7 +52,6 @@ def get_chunk_specification(document: Document) -> Dict[str, str]:
     elif "Article" in document.metadata:
         level = "Article"
     
-
     specification["type"] = level
 
     chunk_number, previous, parents = get_chunk_number(document.metadata, level)
@@ -51,7 +84,39 @@ def get_chunk_specification(document: Document) -> Dict[str, str]:
 def get_chunk_number(
     document_metadata: Dict[str, str],
     level: Literal["Article", "Paragraph", "Subparagraph"]
-) -> str:
+) -> Tuple[str, str | None, List[str]]:
+    """Get the chunk number and the number of previous chunk and the numbers of parent chunks
+    
+    Based on chunk metadata this function is pull out information about serial numbers of chunks.
+
+    The structure of numbers generates due this rule:
+    - `<Number of Codex>`.`<Number of Article>`.`<Number of Paragraph>`.`<Number of Subparagraph>`
+
+    depends on what level is the chunk
+
+    Metadata of the chunk should have this parameters:
+    - **Codex**: str (but it have to be a number, like "149");
+    - **Article**: str (starts with "**Статья X. ..."), where X - is a number of article;
+    - **Paragraph**: str, optional* (starts with "1.", "3.1.", ...);
+    - **Subparagraph**: str, optional* (starts with "1)", "г)", ...).
+
+    Arguments
+    ---------
+    document_metadata: Dict[str, str]
+        The metadata of the chunk. The structure is desribed higher
+    level: Literal["Article", "Paragraph", "Subparagraph"]
+        Hierarchycal level of the chunk
+    
+    Returns
+    -------
+    chunk_number: str
+        Number of this chunk
+    previous: str | None
+        Number of previous chunk, if it is exists.  
+        If the number of this particular chunk is 1st, parameter is set to None
+    parents: List[str]
+        Numbers of parents chunks (chunks that types is higher in the hierarchy)
+    """
     chunk_numbers = [document_metadata["Codex"]]
 
     # The Article level
@@ -72,7 +137,6 @@ def get_chunk_number(
     if level in ["Subparagraph"]:
         chunk_numbers.append(document_metadata["Subparagraph"].split(" ")[-1])
     
-
     # Self number
     chunk_number = ".".join(chunk_numbers)
 
@@ -82,7 +146,6 @@ def get_chunk_number(
     for i in range(2, n):
         parent_number = ".".join(chunk_numbers[:i])
         parents.append(parent_number)
-
 
     # Previous number
     previous = None

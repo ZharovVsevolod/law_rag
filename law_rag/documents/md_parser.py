@@ -73,7 +73,7 @@ def find_all_markdown_links(
     return_cleaned_text: bool = False
         If need to return the cleaned text too. Default is *False*
     placeholder: Optional[str] = None
-        If required, what we need to put in place of deleted link. 
+        If required, what we need to put in place of deleted link.  
         If it is *None* and `return_cleaned_text` is *True*, the placeholder will be got from the config file
     
     Returns
@@ -193,6 +193,31 @@ def clean_headers(texts: List[str]) -> List[str]:
     return texts
 
 def rus_character_to_digit(character: str, skip_some_characters: bool = True) -> int:
+    """Transform the Russian characters to serial number
+    
+    - а -> 1
+    - б -> 2
+    - в -> 3
+    - г -> 4
+    - д -> 5
+
+    etc.
+
+    Also sometimes characters like ё or й are *not* skipped in serial order. For this variant set parameter `skip_some_characters` to False.
+
+    Arguments
+    ---------
+    character: str
+        The character that is need to transform to serial number
+    skip_some_characters: bool = True
+        Extra boolean parameter to skip or not to skip some of the Russian characters that may be skipped in the original document.  
+        Default is *True* - to skip.
+    
+    Returns
+    -------
+    number: int
+        The serial number of Russian character
+    """
     number = ord(character) - 1071 # because the russian "а" character is 1072
 
     if skip_some_characters:
@@ -313,7 +338,8 @@ def document_split(
     path: Optional[str] = None
         Path to markdown text. If it is not specified, path will be pulled from the config file.
     codex_name: Optional[str] = None
-        The name of the source that will be set for "Codex" name in matadata. If it is not specified, it will be the name of the document.
+        The name of the source that will be set for "Codex" name in matadata.  
+        If it is not specified, it will be the name of the document.
     
     Returns
     -------

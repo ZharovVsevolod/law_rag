@@ -30,7 +30,8 @@ def pdf_to_markdown_convertion(
     input_path: Optional[str] = None
         Path to the pdf file. If it is not specified, path will be pulled from the config file.
     output_path: Optional[str] = None
-        Path where converted markdown file will be saved. If it is not specified, path will be pulled from the config file.
+        Path where converted markdown file will be saved.  
+        If it is not specified, path will be pulled from the config file.
     """
     # If paths are not set manually - we get them from the Settings module (config file)
     if input_path is None:
