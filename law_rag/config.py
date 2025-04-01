@@ -18,7 +18,7 @@ pwd = Path(__file__).parent.parent
 config_file = pwd / "config" / "config.yaml"
 
 
-# The whole structure of configuration
+# The whole configuration structure
 class Docs(BaseModel):
     path_to_folder: str
     path_to_pdf: str

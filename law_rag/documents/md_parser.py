@@ -238,7 +238,7 @@ def make_headers_for_article(texts: List[str]) -> List[str]:
     """Make new custom headers in the markdown texts of Russian Codex
     
     That function is setting programly up new headers in the markdown text based on:
-    - The **Header 1** (`#`) is set for keyword "Статья" in the text (the name of article will be in the header text)
+    - The **Header 1** (`#`) is set for keyword "Статья" in the text (the article name will be in the header text)
     - The **Header 2** (`##`) is set for Paragraph (with dots in the end, like "1.", "2.", "2.1.", etc.) with setting head keyword "## Пункт"
     - The **Header 3** (`###`) is set for Subparagraph (with brackets in the end, like "1)", "2)", "2.1)", etc.) with setting head keyword "### Подпункт"
 
@@ -331,15 +331,15 @@ def document_split(
     - The Header 1 head of this peace of text
     - The Header 2 head of this peace of text (*if exists*)
     - The Header 3 head of this peace of text (*if exists*)
-    - The name of the source ("Codex")
+    - The source name (Should be a number like "149")
 
     Arguments
     ---------
     path: Optional[str] = None
         Path to markdown text. If it is not specified, path will be pulled from the config file.
     codex_name: Optional[str] = None
-        The name of the source that will be set for "Codex" name in matadata.  
-        If it is not specified, it will be the name of the document.
+        The source name that will be set for "Codex" name in matadata.  
+        If it is not specified, it will be the document name.
     
     Returns
     -------
