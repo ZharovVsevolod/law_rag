@@ -1,4 +1,4 @@
-"""There is store sime functions for preparing the chunks (in Langchain Document type) to load in Neo4j graph database"""
+"""There is stored some functions for preparing the chunks (in Langchain Document type) to load in Neo4j graph database"""
 
 from langchain_core.documents import Document
 
