@@ -85,10 +85,12 @@ def get_chunk_number(
 
 
     # Previous number
-    previous = int(chunk_numbers[-1]) - 1
-    if previous == 0:
-        previous = None
-    else:
-        previous = parents[-1] + f".{previous}"
+    previous = None
+    if level != "Article":
+        previous = int(chunk_numbers[-1]) - 1
+        if previous == 0:
+            previous = None
+        else:
+            previous = parents[-1] + f".{previous}"
 
     return chunk_number, previous, parents
