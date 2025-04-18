@@ -3,13 +3,14 @@
 from langchain_core.documents import Document
 
 from law_rag.documents.md_parser import find_all_markdown_links
+from law_rag.neo4j.node_schema import Node, Article, Paragraph, Subparagraph
 
 from law_rag.config import Settings
 
 from typing import Dict, Literal, Tuple, List
 
 
-def get_chunk_specification(document: Document) -> Dict[str, str]:
+def get_chunk_specification(document: Document) -> Node:
     """Define the chunk specification to get some node information for setting up the Graph Database
 
     Chunk specification contains this parameters:
@@ -31,6 +32,13 @@ def get_chunk_specification(document: Document) -> Dict[str, str]:
     - **Subparagraph**: str, optional* (starts with "1)", "г)", ...)
 
     \* - depends on the type of the chunk.
+
+    It is returned one of this Node classes:
+    - Article
+    - Paragraph
+    - Subparagraph
+
+    depends on a node type (the level specified based on the document metadata).
     
     Arguments
     ---------
@@ -39,12 +47,10 @@ def get_chunk_specification(document: Document) -> Dict[str, str]:
     
     Returns
     -------
-    specification: Dict[str, str]
-        The specification of the given chunk
+    builded_node: Node
+        The node for Neo4j with all specification
     """
-    specification = {}
-
-    # Find out the Node Type (the metadata level extraction too)
+    # Find out the Node Type (it is also the metadata level extraction too)
     if "Subparagraph" in document.metadata:
         level = "Subparagraph"
     elif "Paragraph" in document.metadata:
@@ -52,33 +58,46 @@ def get_chunk_specification(document: Document) -> Dict[str, str]:
     elif "Article" in document.metadata:
         level = "Article"
     
-    specification["type"] = level
-
     chunk_number, previous, parents = get_chunk_number(document.metadata, level)
-    specification["number"] = chunk_number
-    specification["previous"] = previous
-    specification["parents"] = parents
-    
-    specification["text"] = document.page_content
-    
-    if level != "Article":
-        if Settings.data.clean_text_from_links:
-            references, text_without_links = find_all_markdown_links(
-                document.page_content, 
-                return_cleaned_text = Settings.data.clean_text_from_links
-            )
-            specification["text"] = text_without_links
-        
-        else:
-            references = find_all_markdown_links(
-                document.page_content, 
-                return_cleaned_text = Settings.data.clean_text_from_links
-            )
-        
-        specification["has_reference"] = bool(references)
-        specification["references"] = references
 
-    return specification
+    if level != "Article":
+        text = document.page_content
+        if Settings.data.clean_text_from_links:
+            references, text = find_all_markdown_links(text)
+        else:
+            references = find_all_markdown_links(text)
+    
+    
+    match level:
+        case "Article":
+            builded_node = Article(
+                number = chunk_number,
+                previous = previous,
+                parents = parents,
+                name = document.page_content
+            )
+
+        case "Paragraph":
+            builded_node = Paragraph(
+                number = chunk_number,
+                previous = previous,
+                parents = parents,
+                text = text,
+                has_reference = bool(references),
+                references = references
+            )
+
+        case "Subparagraph":
+            builded_node = Subparagraph(
+                number = chunk_number,
+                previous = previous,
+                parents = parents,
+                text = text,
+                has_reference = bool(references),
+                references = references
+            )
+
+    return builded_node
 
 
 def get_chunk_number(

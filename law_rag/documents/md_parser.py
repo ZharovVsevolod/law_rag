@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 def find_all_markdown_links(
     md_text: str,
-    return_cleaned_text: bool = False,
+    return_cleaned_text: bool = Settings.data.clean_text_from_links,
     placeholder: Optional[str] = None
 ) -> List[Tuple[str, str]] | Tuple[List[Tuple[str, str]], str]:
     """Find and return all links in markdown text. Optionally return text without any links (they will be replaced with a placeholder).
@@ -278,6 +278,26 @@ def make_headers_for_article(texts: List[str]) -> List[str]:
         
     return texts
 
+def change_quotes(texts: List[str]) -> List[str]:
+    """Replace double quotes (") for single (')
+
+    That is necessary because Neo4j uses double quotes for strings, so it need to be signle for proper work.
+    
+    Arguments
+    ---------
+    texts: List[str]
+        List of Markdown text that may content double quotes
+    
+    Returns
+    -------
+    texts: List[str]
+        List of Markdown text with only single quotes
+    """
+    for i, text in enumerate(texts):
+        texts[i] = text.replace('"', "'")
+    
+    return texts
+
 def preprocessing(
     input_path: Optional[str] = None,
     output_path: Optional[str] = None
@@ -350,6 +370,10 @@ def document_split(
         path = Settings.documents.path_to_md_cleaned
     
     texts = load_text(path)
+
+    # Change double quotes for single for Neo4j
+    texts = change_quotes(texts)
+
     texts = merge_text(texts)
 
     headers_to_split_on = [
