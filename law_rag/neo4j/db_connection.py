@@ -6,7 +6,18 @@ from langchain_neo4j import Neo4jGraph
 from dotenv import load_dotenv
 
 def check_connection() -> Driver:
-    """Make the connection to Neo4j Database with original Neo4j driver"""
+    """Make the connection to Neo4j Database with original Neo4j driver
+    
+    Returns
+    -------
+    driver: neo4j.Driver
+        Driver to the neo4j database
+    
+    Raises
+    ------
+    Exeption
+        If the driver could not connect to a Neo4j database instance
+    """
     # Get the connection to Neo4j Database
     driver = GraphDatabase.driver(
         uri = os.environ["DB_URI"], 
@@ -25,7 +36,18 @@ def check_connection() -> Driver:
 
 
 def langchain_neo4j_connection() -> Neo4jGraph:
-    """Make the connection to Neo4j Database with Langchain_neo4j plagin"""
+    """Make the connection to Neo4j Database with Langchain_neo4j plagin
+    
+    Returns
+    -------
+    graph: langchain_neo4j.Neo4jGraph
+        Driver to the neo4j database
+    
+    Raises
+    ------
+    Exeption
+        If the driver could not connect to a Neo4j database instance
+    """
     # Get the connection to Neo4j Database
     graph = Neo4jGraph(
         url = os.environ["DB_URI"],

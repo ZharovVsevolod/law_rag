@@ -4,13 +4,23 @@ def create_node_command(node: Node) -> str:
     """Returns a whole command to create a Node with nessasary parameters
     
     The command will be based on this schema:
-    ```
+    ```Cypher
     MATCH (node:<type_of_node> {<key_parameter_name>: <key_parameter_value>})
     SET node.<parameter_name> = <parameter_value>
     SET node.<parameter_name> = <parameter_value>
     ...
     SET node.<parameter_name> = <parameter_value>
     ```
+
+    Arguments
+    ---------
+    node: Node
+        Node that need to be transformed to Cypher creation command
+    
+    Returns
+    -------
+    command: str
+        Cypher creation command for the argument node
     """
     # Merge the Node with the first paramets - key value
     key_name, key_value = node.primal_key()

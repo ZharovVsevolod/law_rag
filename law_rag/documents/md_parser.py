@@ -83,7 +83,7 @@ def find_all_markdown_links(
     cleaned_md_text: Optional[str]
         The markdown text that was cleaned from the links
     """
-    # Some magic formula. I have got this from this source:
+    # Some magic formula. I have got this one from this source:
     # https://stackoverflow.com/questions/63197371/detecting-all-links-in-markdown-files-in-python-and-replace-them-with-outputs-of
     INLINE_LINK_RE = re.compile(r'\[([^\]]+)\]\(([^)]+)\)')
 

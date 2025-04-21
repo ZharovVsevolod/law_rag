@@ -13,19 +13,19 @@ from typing import Dict, Literal, Tuple, List
 def get_chunk_specification(document: Document) -> Node:
     """Define the chunk specification to get some node information for setting up the Graph Database
 
-    Chunk specification contains this parameters:
-    - **type**: str - node type. Can be Article, Paragraph or Subparagraph;
+    Chunk specification can take this parameters:
+    - **type**: str - node type. Can be Article, Paragraph or Subparagraph (more you can find at `law_rag.neo4j.node_schema`);
     - **number**: str - chunk number based on it's serial number.  
         Structure is `<Codex Number>`.`<Article Number>`.`<Paragraph Number>`.`<Subparagraph NUmber>` depends on what type is it;
     - **previous**: str - previous chunk number, if it is exists. Otherwise is set to *None*;
     - **parents**: List[str] - list of parent numbers (types that higher in the hierarchy);
-    - **text**: str - chunk main text
-    - **has_reference**: bool - if the text contains some markdown links ([some link](www.some-link.com)), 
+    - **text**: str - chunk main text (or **name**, if it's an Article)
+    - **has_reference**: bool - if the text contains some markdown links (link's structure in markdown looks like [some link](www.some-link.com)), 
         parameter will be set to *True*, otherwise - *False*;
     - **references**: List[Tuple[str, str]] - if the text contains some markdown links, there will be list of them.  
         It has tuple structure, like (some_link, www.some-link.com).
     
-    Metadata of the chunk should have this parameters:
+    Chunk's metadata should have this parameters:
     - **Codex**: str (but it have to be a number, like "149")
     - **Article**: str (starts with "**Статья X. ...")
     - **Paragraph**: str, optional* (starts with "1.", "3.1.", ...)
@@ -33,7 +33,7 @@ def get_chunk_specification(document: Document) -> Node:
 
     \* - depends on the type of the chunk.
 
-    It is returned one of this Node classes:
+    This function can return one of this Node classes:
     - Article
     - Paragraph
     - Subparagraph
@@ -50,7 +50,7 @@ def get_chunk_specification(document: Document) -> Node:
     builded_node: Node
         The node for Neo4j with all specification
     """
-    # Find out the Node Type (it is also the metadata level extraction too)
+    # Find out what a Node Type is (also a metadata level extraction too)
     if "Subparagraph" in document.metadata:
         level = "Subparagraph"
     elif "Paragraph" in document.metadata:
@@ -109,7 +109,7 @@ def get_chunk_number(
     Based on chunk metadata this function is pull out information about serial chunk numbers.
 
     The number structure generates due this rule:
-    - `<Codex Number>`.`<Article Number>`.`<Paragraph Number>`.`<Subparagraph NUmber>`
+    - `<Codex Number>`.`<Article Number>`.`<Paragraph Number>`.`<Subparagraph Number>`
 
     depends on what level is the chunk
 
