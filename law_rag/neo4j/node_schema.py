@@ -13,7 +13,7 @@ class Node(BaseModel):
     previous: str | None
         Previous chunk number (if exists, it could be None if this chunk if the first in block)
     parents: List[str]
-        Some parents numbers  
+        Some parent numbers  
         (parents - higher level classes. For example, Codex and Article for Paragraph Node type)  
         It could be *None* if this is a Codex node
     type: str
@@ -118,6 +118,15 @@ class Article(Node):
     name: str
         Article name.  
         Usually it is contains word "Статья", number and headline
+    
+    And some system parameters
+
+    previous: str | None
+        *System parameter*. Previous chunk number (if exists, it could be None if this chunk if the first in block)
+    parents: List[str]
+        *System parameter*. Some parent numbers  
+        (parents - higher level classes. For example, Codex and Article for Paragraph Node type)  
+        It could be *None* if this is a Codex node
     """
     name: str
 
@@ -143,6 +152,15 @@ class Paragraph(Node):
     references: List[Tuple[str, str]]
         If the text contains some markdown links, there will be list of them.  
         It has tuple structure, like (some_link, www.some-link.com).
+    
+    And some system parameters
+
+    previous: str | None
+        *System parameter*. Previous chunk number (if exists, it could be None if this chunk if the first in block)
+    parents: List[str]
+        *System parameter*. Some parent numbers  
+        (parents - higher level classes. For example, Codex and Article for Paragraph Node type)  
+        It could be *None* if this is a Codex node
     """
     text: str
     has_reference: bool
@@ -170,6 +188,15 @@ class Subparagraph(Node):
     references: List[Tuple[str, str]]
         If the text contains some markdown links, there will be list of them.  
         It has tuple structure, like (some_link, www.some-link.com).
+    
+    And some system parameters
+
+    previous: str | None
+        *System parameter*. Previous chunk number (if exists, it could be None if this chunk if the first in block)
+    parents: List[str]
+        *System parameter*. Some parent numbers  
+        (parents - higher level classes. For example, Codex and Article for Paragraph Node type)  
+        It could be *None* if this is a Codex node
     """
     text: str
     has_reference: bool
