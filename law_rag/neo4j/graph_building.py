@@ -26,7 +26,7 @@ def get_chunk_specification(document: Document) -> Node:
         It has tuple structure, like (some_link, www.some-link.com).
     
     Chunk's metadata should have this parameters:
-    - **Codex**: str (but it have to be a number, like "149")
+    - **Codex**: str (but it has to be a number, like "149")
     - **Article**: str (starts with "**Статья X. ...")
     - **Paragraph**: str, optional* (starts with "1.", "3.1.", ...)
     - **Subparagraph**: str, optional* (starts with "1)", "г)", ...)

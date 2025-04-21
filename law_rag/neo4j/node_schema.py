@@ -11,25 +11,25 @@ class Node(BaseModel):
     number: str
         The unique number of this Node
     previous: str | None
-        The number of a previous chunk (if exists, it could be None if this chunk if the first in block)
+        Previous chunk number (if exists, it could be None if this chunk if the first in block)
     parents: List[str]
         Some parents numbers  
-        (parents - classes of the higher level. For example, Codex and Article for Paragraph Node type)  
+        (parents - higher level classes. For example, Codex and Article for Paragraph Node type)  
         It could be *None* if this is a Codex node
     type: str
-        This is a property function. That parameter returned the type of this Node depends of it's class.  
+        This is a property function. That parameter returned the Node type depends on it's class.  
         This parameter does not include in `all_parameters` method.  
         Should be override in every child class.
     
     Methods
     -------
     **primal_key**() -> *Tuple[str, str]*:
-        Returns a name and a parameter of the node primal key.  
+        Returns node primal key name and value.  
         Usually it is number parameter, but could be override in unique Node
     **all_parameters**() -> *set[str]*:
         Returns a set of all contained parameters
     **system_parameters**() -> *List[str]*:
-        Returns a list of names of parameters that used for relationships, not for Node parameters in Neo4j
+        Returns a list of parameters names that used for relationships, not for Node parameters in Neo4j
     
     """
     number: str
@@ -38,7 +38,7 @@ class Node(BaseModel):
 
     @property
     def type(self) -> str:
-        """This is a property function. That parameter returned the type of this Node depends of it's class.
+        """This is a property function. That parameter returned the Node type depends on it's class.
 
         For example, for base Node class it will return "BaseNode".  
         For Codex it should return "Codex", for Article - "Article", etc.
@@ -56,7 +56,7 @@ class Node(BaseModel):
         Returns
         -------
         (name, value): Tuple[str, str]
-            Name of a primal key parameter and it's value
+            Node primal key name and value.
         """
         return "number", self.number
 
@@ -72,7 +72,7 @@ class Node(BaseModel):
         return self.model_fields_set
     
     def system_parameters(self) -> List[str]:
-        """Returns a list of names of parameters that used for relationships, not for Node parameters in Neo4j
+        """Returns a list of parameters names that used for relationships, not for Node parameters in Neo4j
         
         In base conception it is "previous" and "parents", but could be override for every child Node if needs.
 
