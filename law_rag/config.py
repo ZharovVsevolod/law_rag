@@ -10,6 +10,8 @@ from pathlib import Path
 from pydantic import BaseModel
 from omegaconf import OmegaConf, DictConfig
 
+from typing import Dict
+
 import logging
 logger = logging.getLogger(__name__)
 
@@ -25,14 +27,28 @@ class Docs(BaseModel):
     path_to_md: str
     path_to_md_cleaned: str
 
+    def pdf(self, codex_name: str):
+        return self.path_to_folder + "/" + codex_name + "/" + self.path_to_pdf
+    
+    def md(self, codex_name: str):
+        return self.path_to_folder + "/" + codex_name + "/" + self.path_to_md
+
+    def md_clean(self, codex_name: str):
+        return self.path_to_folder + "/" + codex_name + "/" + self.path_to_md_cleaned
+
+
 class Data(BaseModel):
-    name: str
+    start_chunk: Dict[str, int]
     clean_text_from_links: bool
     link_placeholder: str
+
+class System(BaseModel):
+    silent_creation: bool
 
 class Config(BaseModel):
     documents: Docs
     data: Data
+    system: System
 
 
 # Load the yaml config file

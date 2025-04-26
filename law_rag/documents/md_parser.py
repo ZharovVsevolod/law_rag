@@ -11,7 +11,8 @@ from law_rag.documents.common import (
     load_text, 
     save_text, 
     merge_text, 
-    set_metadata_to_documents
+    set_metadata_to_documents,
+    list_files_in_foler
 )
 
 from typing import List, Optional, Tuple
@@ -299,8 +300,8 @@ def change_quotes(texts: List[str]) -> List[str]:
     return texts
 
 def preprocessing(
-    input_path: Optional[str] = None,
-    output_path: Optional[str] = None
+    input_path: str,
+    output_path: str
 ) -> None:
     """Preprocess markdown text
     
@@ -313,17 +314,11 @@ def preprocessing(
 
     Arguments
     ---------
-    input_path: Optional[str] = None
-        Path to the pdf file. If it is not specified, path will be pulled from the config file.
-    output_path: Optional[str] = None
-        Path where converted markdown file will be saved. If it is not specified, path will be pulled from the config file.
-    """
-    # If paths are not set manually - we get them from the Settings module (config file)
-    if input_path is None:
-        input_path = Settings.documents.path_to_md
-    if output_path is None:
-        output_path = Settings.documents.path_to_md_cleaned
-    
+    input_path: str
+        Path to the pdf file
+    output_path: str
+        Path where converted markdown file will be saved
+    """    
     texts = load_text(input_path)
     logger.info("The file was loaded")
 
@@ -336,9 +331,14 @@ def preprocessing(
     save_text(texts, output_path)
     logger.info("The file was saved")
 
+
+def fix_automatization_parsing_mistakes(chunks: List[Document]) -> List[Document]:
+    pass
+
+
 def document_split(
-    path: Optional[str] = None,
-    codex_name: Optional[str] = None
+    codex_name: str,
+    path: Optional[str] = None
 ) -> List[Document]:
     """Split markdown text into Documents based on its heades
     
@@ -355,11 +355,11 @@ def document_split(
 
     Arguments
     ---------
+    codex_name: str
+        The source name that will be set for "Codex" name in matadata.  
+        It'll be also used for path if path is not specified
     path: Optional[str] = None
         Path to markdown text. If it is not specified, path will be pulled from the config file.
-    codex_name: Optional[str] = None
-        The source name that will be set for "Codex" name in matadata.  
-        If it is not specified, it will be the document name.
     
     Returns
     -------
@@ -367,7 +367,7 @@ def document_split(
         The splitted by headers markdown text
     """
     if path is None:
-        path = Settings.documents.path_to_md_cleaned
+        path = Settings.documents.md_clean(codex_name)
     
     texts = load_text(path)
 
@@ -387,9 +387,6 @@ def document_split(
         return_each_line = True
     )
     md_header_splits = markdown_splitter.split_text(texts)
-
-    if codex_name is None:
-        codex_name = Settings.data.name
     
     md_header_splits = set_metadata_to_documents(
         param_name = "Codex",
@@ -397,13 +394,20 @@ def document_split(
         docs = md_header_splits
     )
 
+    # That part is very important!
+    md_header_splits = fix_automatization_parsing_mistakes(md_header_splits)
+
     return md_header_splits
 
+def preprocess_all_md_files() -> None:
+    codexes = list_files_in_foler(Settings.documents.path_to_folder)
 
-def md_parser():
-    preprocessing()
-    # md_split = document_split()
+    for codex in codexes:
+        preprocessing(
+            input_path = Settings.documents.md(codex),
+            output_path = Settings.documents.md_clean(codex)
+        )
 
 
 if __name__ == "__main__":
-    md_parser()
+    preprocess_all_md_files()

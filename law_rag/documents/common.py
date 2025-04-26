@@ -1,9 +1,13 @@
 """
 Some usual functions for interaction with documents, like save, load, merge, etc.
 """
-
+from os import listdir
 from langchain_core.documents import Document
 from typing import List, Union
+
+def list_files_in_foler(path: str) -> List[str]:
+    ls = listdir(path)
+    return ls
 
 def load_text(path: str) -> List[str]:
     """Load text from the file

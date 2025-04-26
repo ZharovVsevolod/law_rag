@@ -12,9 +12,9 @@ class Node(BaseModel):
         The unique number of this Node
     previous: str | None
         Previous chunk number (if exists, it could be None if this chunk if the first in block)
-    parents: List[str]
-        Some parent numbers  
-        (parents - higher level classes. For example, Codex and Article for Paragraph Node type)  
+    parent: str
+        Parent number   
+        (parents - higher level classes. For example, Article for Paragraph Node type)  
         It could be *None* if this is a Codex node
     type: str
         This is a property function. That parameter returned the Node type depends on it's class.  
@@ -34,7 +34,7 @@ class Node(BaseModel):
     """
     number: str
     previous: str | None
-    parents: List[str] | None
+    parent: str | None
 
     @property
     def type(self) -> str:
@@ -74,14 +74,14 @@ class Node(BaseModel):
     def system_parameters(self) -> List[str]:
         """Returns a list of parameters names that used for relationships, not for Node parameters in Neo4j
         
-        In base conception it is "previous" and "parents", but could be override for every child Node if needs.
+        In base conception it is "previous" and "parent", but could be override for every child Node if needs.
 
         Returns
         -------
         system_params: List[str]
             System Node parameters
         """
-        return ["previous", "parents"]
+        return ["previous", "parent"]
 
 # -----
 
@@ -123,9 +123,9 @@ class Article(Node):
 
     previous: str | None
         *System parameter*. Previous chunk number (if exists, it could be None if this chunk if the first in block)
-    parents: List[str]
-        *System parameter*. Some parent numbers  
-        (parents - higher level classes. For example, Codex and Article for Paragraph Node type)  
+    parent: str
+        *System parameter*. Parent numbers  
+        (parents - higher level classes. For example, Article for Paragraph Node type)  
         It could be *None* if this is a Codex node
     """
     name: str
@@ -157,9 +157,9 @@ class Paragraph(Node):
 
     previous: str | None
         *System parameter*. Previous chunk number (if exists, it could be None if this chunk if the first in block)
-    parents: List[str]
-        *System parameter*. Some parent numbers  
-        (parents - higher level classes. For example, Codex and Article for Paragraph Node type)  
+    parent: str
+        *System parameter*. Parent number  
+        (parents - higher level classes. For example, Article for Paragraph Node type)  
         It could be *None* if this is a Codex node
     """
     text: str
@@ -169,6 +169,9 @@ class Paragraph(Node):
     @property
     def type(self):
         return "Paragraph"
+    
+    def system_parameters(self) -> List[str]:
+        return super().system_parameters() + ["references"]
 
 
 class Subparagraph(Node):
@@ -193,8 +196,8 @@ class Subparagraph(Node):
 
     previous: str | None
         *System parameter*. Previous chunk number (if exists, it could be None if this chunk if the first in block)
-    parents: List[str]
-        *System parameter*. Some parent numbers  
+    parent: str
+        *System parameter*. Parent number  
         (parents - higher level classes. For example, Codex and Article for Paragraph Node type)  
         It could be *None* if this is a Codex node
     """
@@ -205,3 +208,19 @@ class Subparagraph(Node):
     @property
     def type(self):
         return "Subparagraph"
+    
+    def system_parameters(self) -> List[str]:
+        return super().system_parameters() + ["references"]
+
+# -----------------
+
+def get_parent_type(node: Node) -> str:
+    match node.type:
+        case "Article":
+            return "Codex"
+        
+        case "Paragraph":
+            return "Article"
+        
+        case "Subparagraph":
+            return "Paragraph"

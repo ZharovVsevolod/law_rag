@@ -3,7 +3,7 @@
 from langchain_core.documents import Document
 
 from law_rag.documents.md_parser import find_all_markdown_links
-from law_rag.neo4j.node_schema import Node, Article, Paragraph, Subparagraph
+from law_rag.knowledge.node_schema import Node, Article, Paragraph, Subparagraph
 
 from law_rag.config import Settings
 
@@ -58,30 +58,33 @@ def get_chunk_specification(document: Document) -> Node:
     elif "Article" in document.metadata:
         level = "Article"
     
-    chunk_number, previous, parents = get_chunk_number(document.metadata, level)
+    chunk_number, previous, parent_number = get_chunk_number(document.metadata, level)
 
-    if level != "Article":
-        text = document.page_content
-        if Settings.data.clean_text_from_links:
-            references, text = find_all_markdown_links(text)
-        else:
-            references = find_all_markdown_links(text)
+    level = chunk_level_correction(chunk_number, level)
+
+    text = document.page_content
+    if Settings.data.clean_text_from_links:
+        references, text = find_all_markdown_links(text)
+    else:
+        references = find_all_markdown_links(text)
     
     
     match level:
         case "Article":
-            builded_node = Article(
-                number = chunk_number,
-                previous = previous,
-                parents = parents,
-                name = document.page_content
+            builded_node = Paragraph(
+                number = f"{chunk_number}.0",
+                previous = None,
+                parent = chunk_number,
+                text = document.page_content,
+                has_reference = bool(references),
+                references = references
             )
 
         case "Paragraph":
             builded_node = Paragraph(
                 number = chunk_number,
                 previous = previous,
-                parents = parents,
+                parent = parent_number,
                 text = text,
                 has_reference = bool(references),
                 references = references
@@ -91,7 +94,7 @@ def get_chunk_specification(document: Document) -> Node:
             builded_node = Subparagraph(
                 number = chunk_number,
                 previous = previous,
-                parents = parents,
+                parent = parent_number,
                 text = text,
                 has_reference = bool(references),
                 references = references
@@ -133,8 +136,8 @@ def get_chunk_number(
     previous: str | None
         Previous chunk number, if it is exists.  
         If the number of this particular chunk is 1st, parameter is set to None
-    parents: List[str]
-        Parent chunk numbers (chunks that types is higher in the hierarchy)
+    parent_number: str
+        Parent chunk number (chunk that types is higher in the hierarchy)
     """
     chunk_numbers = [document_metadata["Codex"]]
 
@@ -160,19 +163,48 @@ def get_chunk_number(
     chunk_number = ".".join(chunk_numbers)
 
     # Parents
-    parents = []
-    n = len(chunk_numbers)
-    for i in range(2, n):
-        parent_number = ".".join(chunk_numbers[:i])
-        parents.append(parent_number)
+    parent_number = ".".join(chunk_numbers[:len(chunk_numbers)-1])
 
     # Previous number
     previous = None
-    if level != "Article":
+    try:
         previous = int(chunk_numbers[-1]) - 1
-        if previous == 0:
-            previous = None
+    
+    # If a number is something... ehh, "special", lile "2.1" or "2-1"
+    except ValueError as error:
+        num = chunk_numbers[-1]
+        if "." in num:
+            symbol_split = "."
+        if "-" in num:
+            symbol_split = "-"
+        
+        num_parent, num_child = num.split(symbol_split)
+        if num_child == "1":
+            previous = num_parent
         else:
-            previous = parents[-1] + f".{previous}"
+            previous = f"{num_parent}.{int(num_child) - 1}"
 
-    return chunk_number, previous, parents
+    if previous == 0:
+        previous = None
+    else:
+        previous = parent_number + f".{previous}"
+
+
+    return chunk_number, previous, parent_number
+
+
+def chunk_level_correction(
+        chunk_number: str,
+        level: Literal["Article", "Paragraph", "Subparagraph"]
+    ) -> str:
+    n = len(chunk_number.split("."))
+
+    match n:
+        case 1:
+            return "Codex"
+        case 2:
+            return "Article"
+        case 3:
+            return "Paragraph"
+        case _:
+            return level
