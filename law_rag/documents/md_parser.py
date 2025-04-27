@@ -333,7 +333,24 @@ def preprocessing(
 
 
 def fix_automatization_parsing_mistakes(chunks: List[Document]) -> List[Document]:
-    pass
+    # Subparagraphs without Paragraphs - promote in rank
+    for chunk in chunks:
+        if ("Subparagraph" in chunk.metadata) and ("Paragraph" not in chunk.metadata):
+            chunk.metadata["Paragraph"] = chunk.metadata["Subparagraph"]
+            del chunk.metadata["Subparagraph"]
+    
+    # Unite chunks
+    n = len(chunks)
+    for i in range(n - 1):
+        try:
+            if chunks[i].metadata == chunks[i + 1].metadata:
+                chunks[i].page_content = chunks[i].page_content + "\n" + chunks[i + 1].page_content
+                del chunks[i + 1]
+                i = i - 1
+        except IndexError:
+            break
+
+    return chunks
 
 
 def document_split(
@@ -394,7 +411,7 @@ def document_split(
         docs = md_header_splits
     )
 
-    # That part is very important!
+    # Fix some mistakes that occures in preprocessing
     md_header_splits = fix_automatization_parsing_mistakes(md_header_splits)
 
     return md_header_splits

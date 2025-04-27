@@ -1,3 +1,6 @@
+# Cheet Sheet for Cypher commands
+# https://neo4j.com/docs/cypher-cheat-sheet/5/all/#_merge
+
 from law_rag.knowledge.node_schema import Node
 from law_rag.knowledge.node_schema import get_parent_type
 
@@ -56,11 +59,13 @@ def create_node_command(node: Node) -> str:
         if param_name not in do_not_set_params:
             param_value = getattr(node, param_name)
 
-            # If the parameter is String - we need to set double quotes at the start and the end for Neo4j
-            if type(param_value) is str:
-                command += f'SET n.{param_name} = "{param_value}"\n'
-            else:
-                command += f"SET n.{param_name} = {param_value}\n"
+            # Set parameter only if it is exists
+            if param_value is not None:
+                # If the parameter is String - we need to set double quotes at the start and the end for Neo4j
+                if type(param_value) is str:
+                    command += f'SET n.{param_name} = "{param_value}"\n'
+                else:
+                    command += f"SET n.{param_name} = {param_value}\n"
     
     return command
 
@@ -104,7 +109,8 @@ def create_parent_relationship(node: Node) -> str:
 
     parent_type = get_parent_type(node)
 
-    command += f"MERGE (n_p:{parent_type}" + " {" + f'{key_name}: "{node.parent}"' + "})\n"
-    command += f"MERGE (n)-[r:PART_OF]->(n_p)\n"
+    if node.parent is not None:
+        command += f"MERGE (n_p:{parent_type}" + " {" + f'{key_name}: "{node.parent}"' + "})\n"
+        command += f"MERGE (n)-[r:PART_OF]->(n_p)\n"
     
     return command

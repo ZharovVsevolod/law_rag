@@ -13,7 +13,7 @@ documents:
 
 data:
   start_chunk:
-    "149": 12
+    "149": 6 # 12
   clean_text_from_links: True
   link_placeholder: "Текст, на который ссылаются, ниже"
 

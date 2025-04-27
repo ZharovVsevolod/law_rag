@@ -33,8 +33,8 @@ class Node(BaseModel):
     
     """
     number: str
-    previous: str | None
-    parent: str | None
+    previous: str | None = None
+    parent: str | None = None
 
     @property
     def type(self) -> str:
@@ -128,7 +128,8 @@ class Article(Node):
         (parents - higher level classes. For example, Article for Paragraph Node type)  
         It could be *None* if this is a Codex node
     """
-    name: str
+    name: str | None
+    text: str | None = None
 
     @property
     def type(self):

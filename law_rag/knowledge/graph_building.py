@@ -60,8 +60,6 @@ def get_chunk_specification(document: Document) -> Node:
     
     chunk_number, previous, parent_number = get_chunk_number(document.metadata, level)
 
-    level = chunk_level_correction(chunk_number, level)
-
     text = document.page_content
     if Settings.data.clean_text_from_links:
         references, text = find_all_markdown_links(text)
@@ -71,13 +69,11 @@ def get_chunk_specification(document: Document) -> Node:
     
     match level:
         case "Article":
-            builded_node = Paragraph(
-                number = f"{chunk_number}.0",
-                previous = None,
-                parent = chunk_number,
+            builded_node = Article(
+                number = chunk_number,
+                name = None,
                 text = document.page_content,
-                has_reference = bool(references),
-                references = references
+                parent = None
             )
 
         case "Paragraph":
@@ -191,20 +187,3 @@ def get_chunk_number(
 
 
     return chunk_number, previous, parent_number
-
-
-def chunk_level_correction(
-        chunk_number: str,
-        level: Literal["Article", "Paragraph", "Subparagraph"]
-    ) -> str:
-    n = len(chunk_number.split("."))
-
-    match n:
-        case 1:
-            return "Codex"
-        case 2:
-            return "Article"
-        case 3:
-            return "Paragraph"
-        case _:
-            return level
