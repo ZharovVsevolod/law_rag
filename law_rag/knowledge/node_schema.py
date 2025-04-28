@@ -1,3 +1,7 @@
+"""
+Nodes' schema and hierarchy
+"""
+
 from pydantic import BaseModel
 from typing import List, Tuple
 
@@ -10,9 +14,9 @@ class Node(BaseModel):
     ----------
     number: str
         The unique number of this Node
-    previous: str | None
+    previous: str | None = None
         Previous chunk number (if exists, it could be None if this chunk if the first in block)
-    parent: str
+    parent: str | None = None
         Parent number   
         (parents - higher level classes. For example, Article for Paragraph Node type)  
         It could be *None* if this is a Codex node
@@ -118,6 +122,10 @@ class Article(Node):
     name: str
         Article name.  
         Usually it is contains word "Статья", number and headline
+    text: Optional[str] = None
+        Preamble of this particular Article. Could not be existed.  
+        This text is set separetely from the Article Node creation, because Article Node is created  
+        on metadata analysis step, and text set up in the next step - chunk text analysis.
     
     And some system parameters
 
@@ -216,6 +224,27 @@ class Subparagraph(Node):
 # -----------------
 
 def get_parent_type(node: Node) -> str:
+    """Match the right parent type based on node type
+    
+    In this project we have this hierarchy (from top to bottom):
+    - Codex
+    - Article
+    - Paragraph
+    - Subparagraph
+
+    So this function returns the type of node that is one step higher.  
+    For example, for Paragraph type will be returned "Article".
+
+    Arguments
+    ---------
+    node: Node
+        Node that need to find a parent hierarchy
+    
+    Returns
+    -------
+    hierarchy_type: str
+        Name of higher type
+    """
     match node.type:
         case "Article":
             return "Codex"

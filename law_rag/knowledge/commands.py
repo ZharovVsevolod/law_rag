@@ -1,3 +1,7 @@
+"""
+Contains Cypher commands for Neo4j Database
+"""
+
 # Cheet Sheet for Cypher commands
 # https://neo4j.com/docs/cypher-cheat-sheet/5/all/#_merge
 
@@ -9,7 +13,9 @@ from law_rag.knowledge.node_schema import get_parent_type
 # -----------------
 
 def delete_all_nodes() -> str:
-    """
+    """A Cypher command to clear all the graph and delete all nodes in it
+    
+    Command:
     ```Cypher
     MATCH (n)
     OPTIONAL MATCH (n)-[r]-()
@@ -71,7 +77,8 @@ def create_node_command(node: Node) -> str:
 
 
 def create_previous_relationship(node: Node) -> str:
-    """
+    """A command to create relationship `NEXT` based on current node number and previous one.
+
     The command will be based on this schema:
     ```Cypher
     MERGE (n:<type_of_node> {<key_name>: <key_value>})
@@ -95,7 +102,8 @@ def create_previous_relationship(node: Node) -> str:
 
 
 def create_parent_relationship(node: Node) -> str:
-    """
+    """A command to create relationship `PART_OF` to the higher on hierarchy node.
+    
     The command will be based on this schema:
     ```Cypher
     MERGE (n:<type_of_node> {<key_name>: <key_value>})

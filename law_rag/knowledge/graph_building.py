@@ -1,4 +1,6 @@
-"""There is stored some functions for preparing the chunks (in Langchain Document type) to load in Neo4j graph database"""
+"""
+There is stored some functions for preparing the chunks (in Langchain Document type) to load in Neo4j graph database
+"""
 
 from langchain_core.documents import Document
 
@@ -28,10 +30,10 @@ def get_chunk_specification(document: Document) -> Node:
     Chunk's metadata should have this parameters:
     - **Codex**: str (but it has to be a number, like "149")
     - **Article**: str (starts with "**Статья X. ...")
-    - **Paragraph**: str, optional* (starts with "1.", "3.1.", ...)
-    - **Subparagraph**: str, optional* (starts with "1)", "г)", ...)
+    - **Paragraph**: str, optional(^1) (starts with "1.", "3.1.", ...)
+    - **Subparagraph**: str, optional(^1) (starts with "1)", "г)", ...)
 
-    \* - depends on the type of the chunk.
+    ^1 - depends on the type of the chunk.
 
     This function can return one of this Node classes:
     - Article
@@ -69,6 +71,8 @@ def get_chunk_specification(document: Document) -> Node:
     
     match level:
         case "Article":
+            # Some of parameters are None because Article node in this stage will be
+            # aready exist. So we do not need to remake it's parameters, only to add new text 
             builded_node = Article(
                 number = chunk_number,
                 name = None,

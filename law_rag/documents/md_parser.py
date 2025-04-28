@@ -333,6 +333,26 @@ def preprocessing(
 
 
 def fix_automatization_parsing_mistakes(chunks: List[Document]) -> List[Document]:
+    """Fix some mistakes that occurs while parcing and chunking
+    
+    1) Sometimes there are Subparagraphs chunks without any Paragraphs level in particular article.  
+    This is happened due original codex structure.  
+    *Solution*: Subparagraphs nodes in this article are Paragraphs now
+
+    2) When chunking with Langchain MarkdownHeaderTextSplitter, some block can be divided  
+    (but they are related to the same hierarchy block)  
+    *Solution*: merge chunks if they are have the same metadata and are going one after another
+
+    Arguments
+    ---------
+    chunks: List[Document]
+        chunks of the original text with some mistakes
+    
+    Returns
+    -------
+    chunks: List[Document]
+        chunks with fixed mistakes
+    """
     # Subparagraphs without Paragraphs - promote in rank
     for chunk in chunks:
         if ("Subparagraph" in chunk.metadata) and ("Paragraph" not in chunk.metadata):
@@ -411,7 +431,7 @@ def document_split(
         docs = md_header_splits
     )
 
-    # Fix some mistakes that occures in preprocessing
+    # Fix some mistakes that occurs in preprocessing
     md_header_splits = fix_automatization_parsing_mistakes(md_header_splits)
 
     return md_header_splits

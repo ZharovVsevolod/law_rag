@@ -1,3 +1,7 @@
+"""
+Build the Graph Database in Neo4j
+"""
+
 from law_rag.knowledge.db_connection import langchain_neo4j_connection
 from law_rag.documents.md_parser import document_split
 from law_rag.knowledge.graph_building import get_chunk_specification, get_chunk_number
@@ -17,6 +21,32 @@ from dotenv import load_dotenv
 
 
 def build_graph_from_scratch() -> None:
+    """Build the Graph Database in Neo4j
+
+    This very one function will build the whole knowledge graph  
+    from the markdown file. This file should be prompted in config file  
+    in this path:
+    ```
+    config/config.yaml
+    ```
+
+    Steps
+    -----
+    - Connect to Neo4j database instance
+    - Clear Database
+    - Get Codex folder and path to file
+    - Create Codex Node
+    - Create all other Nodes
+        - Get the next codex text point
+        - Get the point specification
+        - Check if an Article that point belongs to is exists
+            - If not, creates one
+            - And create a relationship with Codex Node
+        - Get and run create node command
+        - Get create previous node relationship command
+            - And run it if previous node exists
+        - Get and run create parents relationships command
+    """
     # Connect to Neo4j database instance
     graph = langchain_neo4j_connection()
 

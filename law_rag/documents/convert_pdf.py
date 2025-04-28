@@ -17,10 +17,7 @@ def pdf_to_markdown_convertion(
 ) -> None:
     """Convert pdf file to markdown format via Marker
     
-    This function will convert pdf file to markdown and save it to another file. 
-    
-    You can specify the input and/or output paths.
-    If you don't, the function will get it from the config file.
+    This function will convert pdf file with Russian text to markdown and save it to another file. 
 
     Arguments
     ---------

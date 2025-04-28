@@ -6,6 +6,20 @@ from langchain_core.documents import Document
 from typing import List, Union
 
 def list_files_in_foler(path: str) -> List[str]:
+    """Take a list of files in folder
+
+    Files listed only with their names, without global/relative path to them.
+    
+    Arguments
+    ---------
+    path: str
+        Path to the folder
+    
+    Returns
+    -------
+    ls: List[str]
+        List of files in folder
+    """
     ls = listdir(path)
     return ls
 
