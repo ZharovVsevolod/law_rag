@@ -1,5 +1,5 @@
 """
-Contains Cypher commands for Neo4j Database
+Cypher commands for Neo4j Database
 """
 
 # Cheet Sheet for Cypher commands
@@ -7,6 +7,7 @@ Contains Cypher commands for Neo4j Database
 
 from law_rag.knowledge.node_schema import Node
 from law_rag.knowledge.node_schema import get_parent_type
+from typing import List, Literal
 
 # -----------------
 # Creation commands
@@ -121,4 +122,42 @@ def create_parent_relationship(node: Node) -> str:
         command += f"MERGE (n_p:{parent_type}" + " {" + f'{key_name}: "{node.parent}"' + "})\n"
         command += f"MERGE (n)-[r:PART_OF]->(n_p)\n"
     
+    return command
+
+
+# Because there are no variants to create a vector index in Neo4j for multiple labels, we unite this labels
+# https://stackoverflow.com/questions/79578894/can-i-create-one-vector-index-for-multiple-labels-e-g-movie-and-person
+def create_embeddings_label(
+        union_label: str,
+        labels: List[Literal["Codex", "Article", "Paragraph", "Subparagraph"]]
+    ) -> str:
+    all_labels = "|".join(labels)
+    command = f"""
+    MATCH (n:{all_labels})
+    SET n:{union_label}
+    """
+    return command
+
+
+def create_index_embeddings() -> str:
+    """
+    (!NB) Need a
+
+    - NodeLabel
+    - dimension
+    - similarity
+    - embeddingsParameter
+
+    params to execute!
+    """
+    command = """
+    CREATE VECTOR INDEX `node-embeddings` IF NOT EXISTS
+    FOR (a:$NodeLabel) ON (a.$embeddingsParameter)
+    OPTIONS {
+        indexConfig: {
+            `vector.dimensions`: $dimension,
+            `vector.similarity_function`: $similarity
+        }
+    }
+    """
     return command

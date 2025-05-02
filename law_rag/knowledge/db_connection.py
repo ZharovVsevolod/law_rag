@@ -5,7 +5,10 @@ Make the connection with database instance
 import os
 
 from neo4j import GraphDatabase, Driver
-from langchain_neo4j import Neo4jGraph
+from langchain_neo4j import Neo4jGraph, Neo4jVector
+
+from law_rag.models.embeddings_wrapper import get_embeddings
+from law_rag.config import Settings
 
 from dotenv import load_dotenv
 
@@ -70,6 +73,23 @@ def langchain_neo4j_connection() -> Neo4jGraph:
         raise Exception(e)
 
 
+# Strange. Why do we need another connection type to create and execute embeddings?..
+def langchain_embeddings() -> Neo4jVector:
+    vector_graph = Neo4jVector.from_existing_graph(
+        embedding = get_embeddings(),
+        url = os.environ["DB_URI"],
+        username = os.environ["DB_NAME"],
+        password = os.environ["DB_PASSWORD"],
+        index_name = Settings.data.index_name,
+        node_label = Settings.data.embeddings_label,
+        text_node_properties = ["text", "name"],
+        embedding_node_property = Settings.data.embeddings_parameter
+    )
+    return vector_graph
+
+
+
 if __name__ == "__main__":
     load_dotenv()
+    # Here we can check if the connection to Neo4j was successful
     graph = langchain_neo4j_connection()

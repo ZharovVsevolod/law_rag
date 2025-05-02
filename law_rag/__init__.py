@@ -5,6 +5,7 @@ Module of Law Knowledge Graph backend
 # Inner modules
 from . import documents
 from . import knowledge
+from . import models
 
 # Other important scripts
 from . import config

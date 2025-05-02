@@ -16,6 +16,14 @@ data:
     "149": 6
   clean_text_from_links: True
   link_placeholder: "Текст, на который ссылаются, ниже"
+  embeddings_label: ForEmbeddings
+  embeddings_parameter: embeddings
+  index_name: node_embeddings
 
 system:
   silent_creation: False
+
+models:
+  embeddings_name: "intfloat/multilingual-e5-large-instruct"
+  embeddings_dimension: 1024
+  similarity_function: cosine

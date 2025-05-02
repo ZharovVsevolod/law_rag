@@ -10,7 +10,7 @@ from pathlib import Path
 from pydantic import BaseModel
 from omegaconf import OmegaConf, DictConfig
 
-from typing import Dict
+from typing import Dict, Literal
 
 import logging
 logger = logging.getLogger(__name__)
@@ -41,14 +41,23 @@ class Data(BaseModel):
     start_chunk: Dict[str, int]
     clean_text_from_links: bool
     link_placeholder: str
+    embeddings_label: str
+    embeddings_parameter: str
+    index_name: str
 
 class System(BaseModel):
     silent_creation: bool
+
+class Models(BaseModel):
+    embeddings_name: str
+    embeddings_dimension: int
+    similarity_function: Literal["cosine", "euclidean"]
 
 class Config(BaseModel):
     documents: Docs
     data: Data
     system: System
+    models: Models
 
 
 # Load the yaml config file

@@ -2,14 +2,15 @@
 Build the Graph Database in Neo4j
 """
 
-from law_rag.knowledge.db_connection import langchain_neo4j_connection
+from law_rag.knowledge.db_connection import langchain_neo4j_connection, langchain_embeddings
 from law_rag.documents.md_parser import document_split
 from law_rag.knowledge.graph_building import get_chunk_specification, get_chunk_number
 from law_rag.knowledge.commands import (
     create_node_command, 
     create_parent_relationship, 
     create_previous_relationship,
-    delete_all_nodes
+    delete_all_nodes,
+    create_embeddings_label
 )
 from law_rag.documents.common import list_files_in_foler
 from law_rag.knowledge.node_schema import Codex, Article
@@ -131,9 +132,45 @@ def build_graph_from_scratch() -> None:
             print(f"Knowledge Graph for {codex}-ФЗ was created")
             print("-----")
             print()
+    
+    # Create the very one embeddings node label with MultiLabel feature
+    if not Settings.system.silent_creation:
+        print("Creating MultiLabel for Embeddings...")
+    command = create_embeddings_label(
+        union_label = Settings.data.embeddings_label,
+        labels = ["Article", "Paragraph", "Subparagraph"]
+    )
+    graph.query(command)
+
+    # Close the connection because we need another connection instance 
+    # for creating an embeddings
+    graph.close()
+
+    # And build embeddings
+    build_embeddings()
+
+
+def build_embeddings():
+    # Create embeddings
+    if not Settings.system.silent_creation:
+        print("Creating embeddings...")
+        print(f"Model: {Settings.models.embeddings_name}")
+        print("Please, wait...")
+    
+    vector_graph = langchain_embeddings()
+    if not Settings.system.silent_creation:
+        print("Embeddings was created")
+
+    answer = vector_graph.similarity_search(
+        query = "Что такое государственная тайна?"
+    )
+    for ans in answer:
+        print(ans)
+        print("-----")
+        print()
 
 
 
 if __name__ == "__main__":
     load_dotenv()
-    build_graph_from_scratch()
+    build_embeddings()
