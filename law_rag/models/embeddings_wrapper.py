@@ -16,7 +16,7 @@ class HuggingFaceEmbeddings(Embeddings):
         self.model = AutoModel.from_pretrained(model_name)
 
     def embed_query(self, text: str) -> List[float]:
-        inputs = self.tokenizer(text, return_tensors='pt')
+        inputs = self.tokenizer(text, return_tensors = 'pt', truncation = True)
         outputs = self.model(**inputs)
         return outputs.last_hidden_state.sum(dim = 1)[0].detach().numpy().tolist()
     

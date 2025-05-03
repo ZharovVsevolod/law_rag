@@ -7,11 +7,18 @@ Cypher commands for Neo4j Database
 
 from law_rag.knowledge.node_schema import Node
 from law_rag.knowledge.node_schema import get_parent_type
+from law_rag.config import Settings
 from typing import List, Literal
 
 # -----------------
 # Creation commands
 # -----------------
+
+def delete_index() -> str:
+    command = f"""
+    DROP INDEX `{Settings.data.index_name}`
+    """
+    return command
 
 def delete_all_nodes() -> str:
     """A Cypher command to clear all the graph and delete all nodes in it

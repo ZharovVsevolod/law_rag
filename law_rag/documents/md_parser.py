@@ -360,12 +360,23 @@ def fix_automatization_parsing_mistakes(chunks: List[Document]) -> List[Document
             del chunk.metadata["Subparagraph"]
     
     # Unite chunks
+    for j in range(2): # WTF It shouldn't work like that but it works only if run twice (?!)
+        n = len(chunks)
+        for i in range(n - 1):
+            try:
+                if chunks[i].metadata == chunks[i + 1].metadata:
+                    chunks[i].page_content = chunks[i].page_content + "\n" + chunks[i + 1].page_content
+                    del chunks[i + 1]
+                    i = i - 1
+            except IndexError:
+                break
+    
+    # Remove chapter nodes
     n = len(chunks)
     for i in range(n - 1):
         try:
-            if chunks[i].metadata == chunks[i + 1].metadata:
-                chunks[i].page_content = chunks[i].page_content + "\n" + chunks[i + 1].page_content
-                del chunks[i + 1]
+            if "**Глава" in chunks[i].page_content:
+                del chunks[i]
                 i = i - 1
         except IndexError:
             break

@@ -10,6 +10,7 @@ from law_rag.knowledge.commands import (
     create_parent_relationship, 
     create_previous_relationship,
     delete_all_nodes,
+    delete_index,
     create_embeddings_label
 )
 from law_rag.documents.common import list_files_in_foler
@@ -52,6 +53,7 @@ def build_graph_from_scratch() -> None:
     graph = langchain_neo4j_connection()
 
     # Clear Database
+    graph.query(delete_index())
     graph.query(delete_all_nodes())
     if not Settings.system.silent_creation:
         print("Database was cleared for build from scratch")
@@ -158,16 +160,17 @@ def build_embeddings():
         print("Please, wait...")
     
     vector_graph = langchain_embeddings()
+    
     if not Settings.system.silent_creation:
         print("Embeddings was created")
 
-    answer = vector_graph.similarity_search(
-        query = "Что такое государственная тайна?"
-    )
-    for ans in answer:
-        print(ans)
-        print("-----")
-        print()
+        answer = vector_graph.similarity_search(
+            query = "Что такое информация?"
+        )
+        for ans in answer:
+            print(ans)
+            print("-----")
+            print()
 
 
 
