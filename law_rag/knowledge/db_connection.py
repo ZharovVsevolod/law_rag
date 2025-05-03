@@ -8,6 +8,7 @@ from neo4j import GraphDatabase, Driver
 from langchain_neo4j import Neo4jGraph, Neo4jVector
 
 from law_rag.models.embeddings_wrapper import get_embeddings
+from law_rag.knowledge.commands import retrieval_query
 from law_rag.config import Settings
 
 from dotenv import load_dotenv
@@ -83,7 +84,8 @@ def langchain_embeddings() -> Neo4jVector:
         index_name = Settings.data.index_name,
         node_label = Settings.data.embeddings_label,
         text_node_properties = ["text", "name"],
-        embedding_node_property = Settings.data.embeddings_parameter
+        embedding_node_property = Settings.data.embeddings_parameter,
+        retrieval_query = retrieval_query()
     )
     return vector_graph
 

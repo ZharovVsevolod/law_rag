@@ -160,7 +160,7 @@ def build_embeddings():
         print("Please, wait...")
     
     vector_graph = langchain_embeddings()
-    
+
     if not Settings.system.silent_creation:
         print("Embeddings was created")
 
@@ -176,4 +176,4 @@ def build_embeddings():
 
 if __name__ == "__main__":
     load_dotenv()
-    build_embeddings()
+    build_graph_from_scratch()

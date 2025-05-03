@@ -16,7 +16,7 @@ from typing import List, Literal
 
 def delete_index() -> str:
     command = f"""
-    DROP INDEX `{Settings.data.index_name}`
+    DROP INDEX `{Settings.data.index_name}` IF EXISTS
     """
     return command
 
@@ -31,7 +31,7 @@ def delete_all_nodes() -> str:
     ```
     """
     command = """
-    MATCH (n)
+    OPTIONAL MATCH (n)
     OPTIONAL MATCH (n)-[r]-()
     DELETE n,r
     """
@@ -166,5 +166,30 @@ def create_index_embeddings() -> str:
             `vector.similarity_function`: $similarity
         }
     }
+    """
+    return command
+
+# --------------
+# Retrieval part
+# --------------
+
+# https://medium.com/neo4j/implementing-rag-how-to-write-a-graph-retrieval-query-in-langchain-74abf13044f2
+def retrieval_query() -> str:
+    command = """
+    WITH node AS doc, score as similarity
+    ORDER BY similarity DESC LIMIT 5
+    CALL(doc) {
+        OPTIONAL MATCH (doc)<-[:PART_OF]-(inner:Paragraph|Subparagraph)
+        OPTIONAL MATCH (prevDoc:Paragraph|Subparagraph)-[:NEXT]->(doc)
+        OPTIONAL MATCH (doc)-[:NEXT]->(nextDoc:Paragraph|Subparagraph)
+        RETURN prevDoc, doc AS document, nextDoc, collect(inner.text) AS innerPart
+    }
+    RETURN 
+        coalesce(prevDoc.text + '\n', '') +
+        coalesce(document.text, '') +
+        coalesce(reduce(acc = '\n', item IN innerPart | acc || item || '\n'), '') +
+        coalesce(nextDoc.text, '') as text,
+        similarity as score,
+        {source: document.number} AS metadata
     """
     return command
