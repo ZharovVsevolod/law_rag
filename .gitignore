@@ -1,3 +1,5 @@
 __pycache__/
 .env
 checks/
+*.log
+data/hot_history/

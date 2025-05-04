@@ -15,6 +15,7 @@ from law_rag.knowledge.commands import (
 )
 from law_rag.documents.common import list_files_in_foler
 from law_rag.knowledge.node_schema import Codex, Article
+from law_rag.models.llm_wrapper import retriever_answer
 
 from law_rag.config import Settings
 
@@ -156,24 +157,23 @@ def build_embeddings():
     # Create embeddings
     if not Settings.system.silent_creation:
         print("Creating embeddings...")
-        print(f"Model: {Settings.models.embeddings_name}")
+        print(f"Model: {Settings.models.embeddings_model}")
         print("Please, wait...")
     
     vector_graph = langchain_embeddings()
 
     if not Settings.system.silent_creation:
-        print("Embeddings was created")
+        print("Embeddings was created and/or loaded")
+        print()
 
-        answer = vector_graph.similarity_search(
-            query = "Что такое информация?"
+        answer = retriever_answer(
+            question = "Что такое информация?",
+            retriever = vector_graph
         )
-        for ans in answer:
-            print(ans)
-            print("-----")
-            print()
+        print(answer)
 
 
 
 if __name__ == "__main__":
     load_dotenv()
-    build_graph_from_scratch()
+    build_embeddings()

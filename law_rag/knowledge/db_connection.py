@@ -74,17 +74,21 @@ def langchain_neo4j_connection() -> Neo4jGraph:
         raise Exception(e)
 
 
-# Strange. Why do we need another connection type to create and execute embeddings?..
+# https://python.langchain.com/docs/integrations/vectorstores/neo4jvector/
 def langchain_embeddings() -> Neo4jVector:
     vector_graph = Neo4jVector.from_existing_graph(
         embedding = get_embeddings(),
+
         url = os.environ["DB_URI"],
         username = os.environ["DB_NAME"],
         password = os.environ["DB_PASSWORD"],
+
         index_name = Settings.data.index_name,
         node_label = Settings.data.embeddings_label,
         text_node_properties = ["text", "name"],
         embedding_node_property = Settings.data.embeddings_parameter,
+
+        search_type = "hybrid",
         retrieval_query = retrieval_query()
     )
     return vector_graph

@@ -28,5 +28,5 @@ class HuggingFaceEmbeddings(Embeddings):
 
 
 def get_embeddings():
-    embeddings = HuggingFaceEmbeddings(Settings.models.embeddings_name)
+    embeddings = HuggingFaceEmbeddings(Settings.models.embeddings_model)
     return embeddings
