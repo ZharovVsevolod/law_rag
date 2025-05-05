@@ -44,6 +44,6 @@ def add_retirver_answer_to_question(
 def transform_answer_list(retriever_answer: List[str]) -> str:
     answer = ""
     for i, node in enumerate(retriever_answer):
-        answer += f"Документ {i + 1}\n----------\n{node}\n\n"
+        answer += f"### Документ {i + 1}\n{node}\n\n"
     answer = answer[:-2] # Remove the last \n\n
     return answer

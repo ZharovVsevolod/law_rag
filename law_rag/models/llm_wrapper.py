@@ -23,7 +23,7 @@ def get_llm_model(
         case "ollama":
             llm = ChatOllama(
                 model = model_type,
-                # base_url = Settings.models.llm_base_url
+                base_url = Settings.system.ollama_base_url
             )
     
     return llm

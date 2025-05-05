@@ -28,7 +28,7 @@ def check_connection() -> Driver:
     """
     # Get the connection to Neo4j Database
     driver = GraphDatabase.driver(
-        uri = os.environ["DB_URI"], 
+        uri = Settings.system.neo4j_base_url, 
         auth = (os.environ["DB_NAME"], os.environ["DB_PASSWORD"])
     )
     
@@ -58,7 +58,7 @@ def langchain_neo4j_connection() -> Neo4jGraph:
     """
     # Get the connection to Neo4j Database
     graph = Neo4jGraph(
-        url = os.environ["DB_URI"],
+        url = Settings.system.neo4j_base_url,
         username = os.environ["DB_NAME"],
         password = os.environ["DB_PASSWORD"]
     )
@@ -79,7 +79,7 @@ def langchain_embeddings() -> Neo4jVector:
     vector_graph = Neo4jVector.from_existing_graph(
         embedding = get_embeddings(),
 
-        url = os.environ["DB_URI"],
+        url = Settings.system.neo4j_base_url,
         username = os.environ["DB_NAME"],
         password = os.environ["DB_PASSWORD"],
 

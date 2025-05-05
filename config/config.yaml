@@ -25,12 +25,13 @@ system:
   silent_creation: False
   logging_file: "somelogs.log"
   logging_level: 20 # Info level
+  ollama_base_url: "http://ollama-container:11434"
+  neo4j_base_url: "bolt://neo4j:7687"
 
 models:
   embeddings_model: "intfloat/multilingual-e5-large-instruct"
   embeddings_dimension: 1024
   similarity_function: cosine
-  llm_base_url: "http://ollama-container:11434"
   llm_model_type: "gemma2"
   llm_engine: ollama
 

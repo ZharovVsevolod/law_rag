@@ -3,3 +3,6 @@ __pycache__/
 checks/
 *.log
 data/hot_history/
+neo4j_db/
+ollama/
+huggingface/
