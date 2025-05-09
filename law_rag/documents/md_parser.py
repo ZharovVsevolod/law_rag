@@ -359,18 +359,6 @@ def fix_automatization_parsing_mistakes(chunks: List[Document]) -> List[Document
             chunk.metadata["Paragraph"] = chunk.metadata["Subparagraph"]
             del chunk.metadata["Subparagraph"]
     
-    # Unite chunks
-    for j in range(2): # WTF It shouldn't work like that but it works only if run twice (?!)
-        n = len(chunks)
-        for i in range(n - 1):
-            try:
-                if chunks[i].metadata == chunks[i + 1].metadata:
-                    chunks[i].page_content = chunks[i].page_content + "\n" + chunks[i + 1].page_content
-                    del chunks[i + 1]
-                    i = i - 1
-            except IndexError:
-                break
-    
     # Remove chapter nodes
     n = len(chunks)
     for i in range(n - 1):
@@ -382,7 +370,6 @@ def fix_automatization_parsing_mistakes(chunks: List[Document]) -> List[Document
             break
 
     return chunks
-
 
 def document_split(
     codex_name: str,
@@ -432,7 +419,7 @@ def document_split(
 
     markdown_splitter = MarkdownHeaderTextSplitter(
         headers_to_split_on = headers_to_split_on,
-        return_each_line = True
+        return_each_line = False # langchain-text-splitters >= 0.3.8
     )
     md_header_splits = markdown_splitter.split_text(texts)
     

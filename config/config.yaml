@@ -13,8 +13,8 @@ documents:
 
 data:
   start_chunk:
-    "149": 3
-    "152": 3
+    "149": 1
+    "152": 1
   clean_text_from_links: True
   link_placeholder: "Текст, на который ссылаются, ниже"
   embeddings_label: ForEmbeddings
