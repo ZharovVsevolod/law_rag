@@ -20,7 +20,7 @@ class HuggingFaceEmbeddings(Embeddings):
         outputs = self.model(**inputs)
         return outputs.last_hidden_state.sum(dim = 1)[0].detach().numpy().tolist()
     
-    def embed_documents(self, texts: list[str]) -> list[list[float]]:
+    def embed_documents(self, texts: List[str]) -> List[List[float]]:
         answers = []
         for text in texts:
             answers.append(self.embed_query(text))
