@@ -17,7 +17,6 @@ const StreamLangchain = () => {
 
     // Function to setup the WebSocket connection and define event handlers
     const setupWebSocket = () => {
-        // ws.current = new WebSocket('ws://127.0.0.1:8000/ws/chat/');
         ws.current = new WebSocket('ws://localhost:1702/ws/chat/');
         let ongoingStream = null; // To track the ongoing stream's ID
 
