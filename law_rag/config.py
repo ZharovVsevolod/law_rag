@@ -26,6 +26,7 @@ class Docs(BaseModel):
     path_to_pdf: str
     path_to_md: str
     path_to_md_cleaned: str
+    holmes_pickle: str
 
     def pdf(self, codex_name: str):
         return self.path_to_folder + "/" + codex_name + "/" + self.path_to_pdf

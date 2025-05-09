@@ -75,7 +75,7 @@ def langchain_neo4j_connection() -> Neo4jGraph:
 
 
 # https://python.langchain.com/docs/integrations/vectorstores/neo4jvector/
-def langchain_embeddings() -> Neo4jVector:
+def langchain_neo4j_vector() -> Neo4jVector:
     vector_graph = Neo4jVector.from_existing_graph(
         embedding = get_embeddings(),
 
@@ -99,3 +99,4 @@ if __name__ == "__main__":
     load_dotenv()
     # Here we can check if the connection to Neo4j was successful
     graph = langchain_neo4j_connection()
+    graph.close()

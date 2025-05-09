@@ -2,8 +2,10 @@
 Some usual functions for interaction with documents, like save, load, merge, etc.
 """
 from os import listdir
+import pickle
+
 from langchain_core.documents import Document
-from typing import List, Union
+from typing import List, Union, Dict
 
 def list_files_in_foler(path: str) -> List[str]:
     """Take a list of files in folder
@@ -61,6 +63,15 @@ def save_text(texts: List[str], save_path: str) -> None:
         encoding = "utf-8"
     ) as file:
         file.writelines(texts)
+
+def save_pkl(texts: List[Dict[str, str]], save_path: str) -> None:
+    with open(save_path, mode = "wb+") as file:
+        pickle.dump(texts, file)
+
+def load_pkl(path: str) -> List[Dict[str, str]]:
+    with open(path, 'rb') as file:
+        loaded = pickle.load(file)
+    return loaded
 
 def merge_text(texts: List[str]) -> str:
     """Merge text from the List of String to very one String

@@ -1,8 +1,7 @@
 """
 Build the Graph Database in Neo4j
 """
-
-from law_rag.knowledge.db_connection import langchain_neo4j_connection, langchain_embeddings
+from law_rag.knowledge.db_connection import langchain_neo4j_connection, langchain_neo4j_vector
 from law_rag.documents.md_parser import document_split
 from law_rag.knowledge.graph_building import get_chunk_specification, get_chunk_number
 from law_rag.knowledge.commands import (
@@ -160,12 +159,13 @@ def build_embeddings():
         print(f"Model: {Settings.models.embeddings_model}")
         print("Please, wait...")
     
-    vector_graph = langchain_embeddings()
+    vector_graph = langchain_neo4j_vector()
 
     if not Settings.system.silent_creation:
         print("Embeddings was created and/or loaded")
         print()
 
+        print("Check how it is working:")
         answer = retriever_answer(
             question = "Что такое информация?",
             retriever = vector_graph

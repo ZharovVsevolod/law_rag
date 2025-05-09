@@ -10,13 +10,14 @@ documents:
   path_to_pdf: original.pdf
   path_to_md: parsed.md
   path_to_md_cleaned: clean.md
+  holmes_pickle: data/build/triplets.pkl
 
 data:
   start_chunk:
     "149": 1
     "152": 1
   clean_text_from_links: True
-  link_placeholder: "Текст, на который ссылаются, ниже"
+  link_placeholder: ""
   embeddings_label: ForEmbeddings
   embeddings_parameter: embeddings
   index_name: node_embeddings
@@ -32,7 +33,7 @@ models:
   embeddings_model: "intfloat/multilingual-e5-large-instruct"
   embeddings_dimension: 1024
   similarity_function: cosine
-  llm_model_type: "gemma2"
+  llm_model_type: "gemma3:4b"
   llm_engine: ollama
 
 api:

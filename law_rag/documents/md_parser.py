@@ -4,9 +4,7 @@ Some function for parsing markdown file and preprocess it for the future graph d
 import re
 
 from langchain_text_splitters import MarkdownHeaderTextSplitter
-from langchain_core.documents import Document
 
-from law_rag.config import Settings
 from law_rag.documents.common import (
     load_text, 
     save_text, 
@@ -14,8 +12,10 @@ from law_rag.documents.common import (
     set_metadata_to_documents,
     list_files_in_foler
 )
+from law_rag.config import Settings
 
-from typing import List, Optional, Tuple
+from langchain_core.documents import Document
+from typing import List, Optional, Tuple, Literal
 
 import logging
 logger = logging.getLogger(__name__)
@@ -170,8 +170,17 @@ def remove_links_from_text(
     if type(links) is str:
         links = [links]
     
+    # If there is no placeholder, remove also a link's brackets
+    if placeholder == "":
+        for i in range(len(links)):
+            links[i] = "(" + links[i] + ")"
+    
     for link in links:
         md_text = md_text.replace(link, placeholder)
+        # If there is no placeholder, remove also a text's brackets
+        if placeholder == "":
+            md_text = md_text.replace("[", "")
+            md_text = md_text.replace("]", "")
     
     return md_text
 
@@ -253,11 +262,16 @@ def make_headers_for_article(texts: List[str]) -> List[str]:
     texts: List[str]
         List of Markdown text with new custom headers
     """
+    # Sometimes in Artcile there are no Paragraph. But we do not need Subparagraph without Paragraphs
+    # So we should check if there was a Paragraph, or Subparagraph should be promoted to Paragraph
+    paragraph_flag = False
+
     for i, text in enumerate(texts):
         if "Статья" in text:
             if text[0] == " ":
                 text = text[1:]
             texts[i] = "# " + text
+            paragraph_flag = False
         
         else:
             digit = text.split(" ")[0]
@@ -266,17 +280,34 @@ def make_headers_for_article(texts: List[str]) -> List[str]:
                     match digit[-1]:
                         case ".":
                             texts[i] = f"## Пункт {digit[:-1]}\n" + text
+                            paragraph_flag = True
                         case ")":
                             part = digit[:-1]
                             # They can also be like а), б), в), г), etc.
                             if not part.isdigit():
                                 part = rus_character_to_digit(part, skip_some_characters = True)
-                            
-                            texts[i] = f"### Подпункт {part}\n" + text
+                            if paragraph_flag:
+                                texts[i] = f"### Подпункт {part}\n" + text
+                            else:
+                                texts[i] = f"## Пункт {part}\n" + text
             
             except Exception as e:
                 pass
         
+    return texts
+
+def delete_headers_from_texts(
+    texts: List[Document],
+    headers_to_delete: List[str]
+):
+    for i in range(len(texts)):
+        lines = texts[i].page_content.split("\n")
+        for j, line in enumerate(lines):
+            for header in headers_to_delete:
+                if header in line:
+                    del lines[j]
+        texts[i].page_content = "\n".join(lines)
+    
     return texts
 
 def change_quotes(texts: List[str]) -> List[str]:
@@ -352,13 +383,7 @@ def fix_automatization_parsing_mistakes(chunks: List[Document]) -> List[Document
     -------
     chunks: List[Document]
         chunks with fixed mistakes
-    """
-    # Subparagraphs without Paragraphs - promote in rank
-    for chunk in chunks:
-        if ("Subparagraph" in chunk.metadata) and ("Paragraph" not in chunk.metadata):
-            chunk.metadata["Paragraph"] = chunk.metadata["Subparagraph"]
-            del chunk.metadata["Subparagraph"]
-    
+    """    
     # Remove chapter nodes
     n = len(chunks)
     for i in range(n - 1):
@@ -373,7 +398,8 @@ def fix_automatization_parsing_mistakes(chunks: List[Document]) -> List[Document
 
 def document_split(
     codex_name: str,
-    path: Optional[str] = None
+    path: Optional[str] = None,
+    mode: Literal["standard", "holmes"] = "standard"
 ) -> List[Document]:
     """Split markdown text into Documents based on its heades
     
@@ -411,11 +437,19 @@ def document_split(
 
     texts = merge_text(texts)
 
-    headers_to_split_on = [
-        ("#", "Article"),
-        ("##", "Paragraph"),
-        ("###", "Subparagraph")
-    ]
+    match mode:
+        case "standard":
+            headers_to_split_on = [
+                ("#", "Article"),
+                ("##", "Paragraph"),
+                ("###", "Subparagraph")
+            ]
+        
+        case "holmes":
+            headers_to_split_on = [
+                ("#", "Article"),
+                ("##", "Paragraph")
+            ]
 
     markdown_splitter = MarkdownHeaderTextSplitter(
         headers_to_split_on = headers_to_split_on,
@@ -431,6 +465,16 @@ def document_split(
 
     # Fix some mistakes that occurs in preprocessing
     md_header_splits = fix_automatization_parsing_mistakes(md_header_splits)
+
+    # For HOLMES method
+    if mode == "holmes":
+        md_header_splits = delete_headers_from_texts(
+            texts = md_header_splits,
+            headers_to_delete = ["###"]
+        )
+
+        for chunk in md_header_splits:
+            _, chunk.page_content = find_all_markdown_links(chunk.page_content)
 
     return md_header_splits
 

@@ -1,8 +1,10 @@
 from langchain_ollama import ChatOllama
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables.history import RunnableWithMessageHistory
-from langchain_core.output_parsers import StrOutputParser
 from langchain_neo4j import Neo4jVector
+
+from langchain_core.output_parsers.json import JsonOutputParser
+from langchain_core.output_parsers import StrOutputParser
 
 from law_rag.db_manager.data_management import get_session_history_with_local_file
 from law_rag.models.blanks import (
@@ -12,19 +14,41 @@ from law_rag.models.blanks import (
 )
 from law_rag.config import Settings
 
+from langchain_core.runnables.base import RunnableSerializable
 from typing import Literal, Tuple
 
 def get_llm_model(
     model_type: Literal["qwen3:8b", "deepseek-r1:8b", "gemma3:4b", "gemma2"],
-    engine: Literal["ollama"] = "ollama"
-) -> ChatOllama:
+    engine: Literal["ollama"] = "ollama",
+    answer_parser: Literal["none", "json", "string"] = "none",
+    inside_docker_container: bool = True
+) -> ChatOllama | RunnableSerializable:
     """Get an LLM model"""
+    # LLM
     match engine:
         case "ollama":
+            if inside_docker_container:
+                engine_url = Settings.system.ollama_base_url
+            else:
+                engine_url = None
+            
             llm = ChatOllama(
                 model = model_type,
-                base_url = Settings.system.ollama_base_url
+                base_url = engine_url
             )
+    
+    # Additional parser if needed
+    match answer_parser:
+        case "none":
+            pass
+
+        case "json":
+            json_parser = JsonOutputParser()
+            llm = llm | json_parser
+        
+        case "string":
+            string_parser = StrOutputParser()
+            llm = llm | string_parser
     
     return llm
 
