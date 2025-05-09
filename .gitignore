@@ -4,13 +4,10 @@ __pycache__/
 
 # Enviroment
 .env
-/data/.initialized
 
 # Development
 checks/
 
 # Docker volumes
 data/hot_history/
-neo4j_db/
-ollama/
-huggingface/
+volumes/

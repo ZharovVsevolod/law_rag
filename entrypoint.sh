@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-INIT_FLAG="data/.initialized"
+INIT_FLAG="volumes/.initialized"
 
 # Stop the ollama service if it is running
 systemctl is-active --quiet ollama.service && systemctl stop ollama.service

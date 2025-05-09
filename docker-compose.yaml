@@ -3,7 +3,7 @@ services:
     image: ollama/ollama
     container_name: ollama_c
     volumes:
-      - ./ollama:/root/.ollama
+      - ./volumes/ollama:/root/.ollama
     ports:
       - 11434:11434
     deploy:
@@ -27,10 +27,10 @@ services:
       - NEO4J_apoc_import_file_use__neo4j__config=true
       - NEO4J_PLUGINS=["apoc", "graph-data-science"]
     volumes:
-      - ./neo4j_db/data:/data
-      - ./neo4j_db/logs:/logs
-      - ./neo4j_db/import:/var/lib/neo4j/import
-      - ./neo4j_db/plugins:/plugins
+      - ./volumes/neo4j_db/data:/data
+      - ./volumes/neo4j_db/logs:/logs
+      - ./volumes/neo4j_db/import:/var/lib/neo4j/import
+      - ./volumes/neo4j_db/plugins:/plugins
 
   api:
     build: 
@@ -42,7 +42,7 @@ services:
     ports:
       - 1702:1702/tcp
     volumes:
-      - ./huggingface:/root/.cache/huggingface
+      - ./volumes/huggingface:/root/.cache/huggingface
   
   frontend:
     build: ./frontend
