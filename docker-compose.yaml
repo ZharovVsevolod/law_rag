@@ -43,6 +43,7 @@ services:
       - 1702:1702/tcp
     volumes:
       - ./volumes/huggingface:/root/.cache/huggingface
+      - ./config:/config
   
   frontend:
     build: ./frontend
