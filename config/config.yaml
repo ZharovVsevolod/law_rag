@@ -46,3 +46,4 @@ web:
   run_name: Alice
   path_to_history: "data/hot_history/"
   mode: "all" # "all", "naive", "holmes"
+  need_to_show_rag: True

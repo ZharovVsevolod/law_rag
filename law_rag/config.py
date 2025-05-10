@@ -71,6 +71,7 @@ class WebCfg(BaseModel):
     run_name: str
     path_to_history: str
     mode: Literal["all", "naive", "holmes"]
+    need_to_show_rag: bool
 
 class Config(BaseModel):
     documents: Docs

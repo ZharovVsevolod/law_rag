@@ -93,12 +93,13 @@ async def websocket_endpoint(websocket: WebSocket):
                     ship_headers = True
                 )
 
-        await websocket.send_json({
-            "event": "rag_system",
-            "name": "RAG",
-            "data": raw_retriever_message,
-            "run_id": "rag_system"
-        })
+        if Settings.web.need_to_show_rag:
+            await websocket.send_json({
+                "event": "rag_system",
+                "name": "RAG",
+                "data": raw_retriever_message,
+                "run_id": "rag_system"
+            })
 
         async for chunk in runnable_with_history.astream_events({'input': retriever_message}, version="v2", config=config):
             if chunk["event"] in ["on_parser_start", "on_parser_stream"]:
