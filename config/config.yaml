@@ -27,9 +27,9 @@ data:
 system:
   silent_creation: False
   logging_file: "somelogs.log"
-  logging_level: 20 # LEVELS: 10 - Debug, 20 - Info, 30 - Warning, 40 - Error, 50 - Critical Error
+  logging_level: 20 # LEVELS: 10 - DEB, 20 - INF, 30 - WARN, 40 - ERR, 50 - CRITERR
   ollama_base_url: "http://ollama-container:11434"
-  neo4j_base_url: "bolt://localhost:7687" # "bolt://neo4j:7687"
+  neo4j_base_url: "bolt://neo4j:7687"
 
 models:
   embeddings_model: "intfloat/multilingual-e5-large-instruct"
