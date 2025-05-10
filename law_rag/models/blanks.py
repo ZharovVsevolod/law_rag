@@ -1,4 +1,4 @@
-from langchain.schema import SystemMessage, AIMessage
+from langchain.schema import SystemMessage, AIMessage, HumanMessage
 from langchain_core.prompts.prompt import PromptTemplate
 
 from law_rag.knowledge.graph_building import chunk_number_to_str
@@ -9,7 +9,7 @@ from typing import List
 # ------------
 #     Main
 # ------------
-SYSTEM_PROMPT: SystemMessage = SystemMessage(content = """
+SYSTEM_PROMPT = SystemMessage(content = """
 Ты являешься высококвалифицированным юристом с многолетним опытом практической работы в сфере права.
 Пользователь задаёт тебе вопрос, требующий юридического анализа. Твоя задача — дать на него ответ, 
 строго ориентируясь на нормы действующего законодательства Российской Федерации.
@@ -29,7 +29,7 @@ SYSTEM_PROMPT: SystemMessage = SystemMessage(content = """
 """
 )
 
-START_MESSAGE: AIMessage = AIMessage(content = """Приветствую! Я могу помочь с вопросами, касающихся цифрового права Российской Федерации. 
+START_MESSAGE = AIMessage(content = """Приветствую! Я могу помочь с вопросами, касающихся цифрового права Российской Федерации. 
 Что Вас интересует?"""
 )
 
@@ -74,7 +74,7 @@ def transform_answer_list(
 # ------------
 #    HOLMES
 # ------------
-HOLMES_SYSTEM_GET_TRIPLETS: SystemMessage = SystemMessage(content = """
+HOLMES_SYSTEM_GET_TRIPLETS = SystemMessage(content = """
 **Task**: Comprehensively extract ALL the triples (subject, relation, object) from below given paragraph.
 Ensure that the subject and objects in the triples are named entities (name of person, organization, dates etc) and not multiple in number. You will be HEAVILY PENALIZED if you violate this constraint.
 
@@ -146,3 +146,73 @@ CYPHER_GENERATION_PROMPT = PromptTemplate(
     input_variables = ["schema", "question"], 
     template = CYPHER_GENERATION_TEMPLATE
 )
+
+
+# -------------
+#   Questions
+# -------------
+SYNTHETIC_QA_DATASET_SYSTEM_PROMPT = SystemMessage(content = """
+You are a highly skilled AI assistant tasked with generating a synthetic Question-Answering (QA) dataset from a given text passage. Your goal is to create a diverse and useful dataset for training and evaluating question-answering models.  You will operate under the following constraints and guidelines.
+
+**1. Input:**
+
+*   You will receive a `text_passage` (a string containing the source text) in Russian language.
+*   You will also receive a `num_questions` integer representing the desired number of questions to generate for this passage. You can generate less questions if there are no more useful information in the provided text.
+*   Optionally, you can receive `question_types` (e.g., ["factual", "inferential", "definition", "comparison"] - a list of question types you want to prioritize. If not provided, aim for a balance of question types).
+
+**2. Output Format:**
+
+Your output should be a JSON array. Each object in the array represents a single question-answer pair. Each object MUST have the following keys:
+
+*   `question`: (string) The generated question in Russian language.
+*   `answer`: (string) The correct answer to the question in Russian language.
+*   `context`: (string) The relevant excerpt from the `text_passage` used to derive the answer. This is CRUCIAL for grounding the QA model.
+*   `difficulty`: (string) Categorize the difficulty of the question – "easy", "medium", or "hard".  This should reflect the complexity of the reasoning required.  Consider factors like sentence length, vocabulary, and the type of information requested.
+
+**3. Generation Guidelines:**
+
+*   **Diversity:** Generate a wide variety of question types and difficulty levels.  Don't just create simple "who", "what", "when" questions.
+*   **Question Types:**  Specifically, aim to include questions that test:
+    *   **Factual Recall:** Direct retrieval of information.
+    *   **Inference:** Requiring the model to deduce information not explicitly stated.
+    *   **Definition:** Asking for the meaning of a term or concept.
+    *   **Comparison:** Asking for similarities and differences.
+    *   **Explanation:** Asking the model to summarize or clarify a point.
+*   **Context Extraction:**  Always extract a relevant excerpt from `text_passage` to serve as the `context`.  The `context` should be the *shortest* possible excerpt that allows the correct `answer` to be derived.
+*   **Difficulty Rating:**  Assign a `difficulty` rating accurately.  Consider:
+    *   **Sentence Length:** Longer sentences generally mean harder questions.
+    *   **Vocabulary:** Use of complex or specialized terms increases difficulty.
+    *   **Reasoning Steps:** Questions requiring multiple reasoning steps are “hard”.
+*   **Avoid Redundancy:** Do not generate questions that are trivially similar to one another.
+*   **Creativity:**  While grounded in the source text, demonstrate creativity in phrasing questions.  Don't simply copy sentences verbatim.  Rephrase them naturally.
+
+**4. Tone and Style:**
+
+*   Maintain a clear, concise, and natural language style.
+
+**5. Example:**
+
+text_passage: 1. Субъект персональных данных принимает решение о предоставлении его персональных данных и дает согласие на их обработку свободно, своей волей и в своем интересе. Согласие на обработку персональных данных должно быть конкретным, предметным, информированным, сознательным и однозначным. Согласие на обработку персональных данных может быть дано субъектом персональных данных или его представителем в любой позволяющей подтвердить факт его получения форме, если иное не установлено федеральным законом. В случае получения согласия на обработку персональных данных от представителя субъекта персональных данных полномочия данного представителя на дачу согласия от имени субъекта персональных данных проверяются оператором.  
+
+Output:
+```json
+[
+  {
+    "question": "В каком виде можно давать согласие на обработку персональных данных?",
+    "answer": "Согласие на обработку персональных данных может быть дано в любой форме с возможностью подтверждения факта его [согласия] получения.",
+    "context": "Согласие на обработку персональных данных может быть дано субъектом персональных данных или его представителем в любой позволяющей подтвердить факт его получения форме, если иное не установлено федеральным законом.",
+    "difficulty": "medium"
+  },
+  {
+    "question": "Какое должно быть согласие на обработку персональных данных?",
+    "answer": "Согласие на обработку персональных данных должно быть конкретным, предметным, информированным, сознательным и однозначным. Оно даётся субъектом по своей доброй воле.",
+    "context": "Субъект персональных данных принимает решение о предоставлении его персональных данных и дает согласие на их обработку свободно, своей волей и в своем интересе. Согласие на обработку персональных данных должно быть конкретным, предметным, информированным, сознательным и однозначным.",
+    "difficulty": "easy"
+  }
+]
+"""
+)
+
+def human_qa_dataset(text: str, num_questions: int = 2):
+    human = HumanMessage(f"text_passage: {text}\n\nnum_questions: {num_questions}")
+    return human

@@ -1,6 +1,6 @@
 [project]
 name = "law-rag"
-version = "0.0.1"
+version = "0.0.3"
 description = "Magister diploma project with Graph RAG system on Digital Law theme."
 authors = [
     {name = "Vsevolod",email = "wsewolod@mail.ru"}

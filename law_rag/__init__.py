@@ -7,6 +7,7 @@ from . import documents
 from . import knowledge
 from . import models
 from . import db_manager
+from . import dataset
 
 # Other important scripts
 from . import config

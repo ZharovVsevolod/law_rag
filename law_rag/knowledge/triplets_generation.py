@@ -73,6 +73,7 @@ def generate_triplets():
         texts = document_split(codex, mode = "holmes")
         start_chunk = Settings.data.start_chunk[codex]
         texts = texts[start_chunk:]
+        
         if not Settings.system.silent_creation:
             print("Get all Codex text in chunks")
             print("Proceed through all chunks...")
@@ -89,7 +90,6 @@ def generate_triplets():
             # Save answers every 50 steps just in case
             if pc % 50 == 0:
                 save_pkl(all_triplets_list, Settings.documents.holmes_pickle)
-                print("Interim saving...")
             pc += 1
     
     # Fix some answer issues

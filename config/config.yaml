@@ -24,10 +24,15 @@ data:
   holmes_node: Entity
   holmes_index_name: holmes_embeddings
 
+qa_dataset:
+  num_questions_per_chunk: 2
+  path_to_save: "data/build/qa_dataset.pkl"
+
 system:
   silent_creation: False
   logging_file: "somelogs.log"
-  logging_level: 20 # LEVELS: 10 - DEB, 20 - INF, 30 - WARN, 40 - ERR, 50 - CRITERR
+  # LEVELS: 10 - DEB, 20 - INF, 30 - WARN, 40 - ERR, 50 - CRITERR
+  logging_level: 20
   ollama_base_url: "http://ollama-container:11434"
   neo4j_base_url: "bolt://neo4j:7687"
 

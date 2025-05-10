@@ -77,4 +77,4 @@ def build_embeddings():
 
 if __name__ == "__main__":
     load_dotenv()
-    build_embeddings()
+    build_nodes()

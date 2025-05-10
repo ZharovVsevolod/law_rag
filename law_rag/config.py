@@ -48,6 +48,10 @@ class Data(BaseModel):
     holmes_node: str
     holmes_index_name: str
 
+class QaDataset(BaseModel):
+    num_questions_per_chunk: int
+    path_to_save: str
+
 class System(BaseModel):
     silent_creation: bool
     logging_file: str
@@ -76,6 +80,7 @@ class WebCfg(BaseModel):
 class Config(BaseModel):
     documents: Docs
     data: Data
+    qa_dataset: QaDataset
     system: System
     models: Models
     api: Api
