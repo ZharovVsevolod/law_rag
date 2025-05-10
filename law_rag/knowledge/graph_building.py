@@ -188,3 +188,31 @@ def get_chunk_number(
 
 
     return chunk_number, previous, parent_number
+
+def chunk_number_to_str(chunk_number: str) -> str:
+    numbers = chunk_number.split(".")[:-1]
+
+    n = len(numbers)
+    chunk_number_to_show = ""
+
+    for i in range(n):
+        match i:
+            case 0:
+                chunk_number_to_show += f"{numbers[0]}-ФЗ"
+            
+            case 1:
+                if n == 4:
+                    chunk_number_to_show += f", Статья {numbers[1]}.{numbers[2]}"
+                else:
+                    chunk_number_to_show += f", Статья {numbers[1]}"
+            
+            case 2:
+                if n == 4:
+                    pass
+                else:
+                    chunk_number_to_show += f", Параграф {numbers[2]}"
+            
+            case 3:
+                chunk_number_to_show += f", Параграф {numbers[3]}"
+    
+    return chunk_number_to_show

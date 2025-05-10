@@ -76,7 +76,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     ship_headers = True
                 )
                 retriever_message = retriever_message_naive + "\n\n" + retriever_message_holmes
-                raw_retriever_message = raw_retriever_message_naive + "\n\n" + raw_retriever_message_holmes
+                raw_retriever_message = raw_retriever_message_naive + "\n\n### Триплеты\n" + raw_retriever_message_holmes
             
             case "naive":
                 retriever_message, raw_retriever_message = retriever_answer(

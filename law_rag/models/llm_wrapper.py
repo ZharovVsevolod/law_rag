@@ -65,8 +65,6 @@ def retriever_answer(
         query = question,
         k = 3
     )
-    answer_nodes = [node.page_content for node in answer_nodes]
-
     answer = add_retirver_answer_to_question(question, answer_nodes, ship_headers)
 
     if return_also_raw_answer:

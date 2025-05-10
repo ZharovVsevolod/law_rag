@@ -1,5 +1,9 @@
 from langchain.schema import SystemMessage, AIMessage
 from langchain_core.prompts.prompt import PromptTemplate
+
+from law_rag.knowledge.graph_building import chunk_number_to_str
+
+from langchain_core.documents import Document
 from typing import List
 
 # ------------
@@ -34,7 +38,7 @@ ERROR_MESSAGE: str = "Упс! Кажется, что-то пошло не так
 
 def add_retirver_answer_to_question(
     question: str,
-    retriever_answer: List[str],
+    retriever_answer: List[Document],
     ship_headers: bool = False
 ) -> str:
     answer = f"Вопрос пользователя: {question}\n\n"
@@ -47,17 +51,20 @@ def add_retirver_answer_to_question(
 
 
 def transform_answer_list(
-    retriever_answer: List[str], 
+    retriever_answer: List[Document], 
     ship_headers: bool = False
 ) -> str:
     answer = ""
-    for i, node in enumerate(retriever_answer):
+    for node in retriever_answer:
+        text = node.page_content
+
         if ship_headers:
-            answer += f"{node}  \n"
+            answer += f"{text}  \n"
         
         else:
-            answer += f"### Документ {i + 1}\n"
-            answer += f"{node}\n"
+            source = chunk_number_to_str(node.metadata["source"])
+            answer += f"### Отрывок из {source}\n"
+            answer += f"{text}\n"
             answer += "\n"
     
     answer = answer[:-1] # Remove the last \n
