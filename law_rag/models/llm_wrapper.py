@@ -1,7 +1,7 @@
 from langchain_ollama import ChatOllama
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables.history import RunnableWithMessageHistory
-from langchain_neo4j import Neo4jVector
+from langchain_neo4j import Neo4jVector, GraphCypherQAChain, Neo4jGraph
 
 from langchain_core.output_parsers.json import JsonOutputParser
 from langchain_core.output_parsers import StrOutputParser
@@ -10,7 +10,8 @@ from law_rag.db_manager.data_management import get_session_history_with_local_fi
 from law_rag.models.blanks import (
     SYSTEM_PROMPT, 
     add_retirver_answer_to_question, 
-    transform_answer_list
+    transform_answer_list,
+    CYPHER_GENERATION_PROMPT
 )
 from law_rag.config import Settings
 
@@ -54,10 +55,11 @@ def get_llm_model(
 
 
 def retriever_answer(
-        question: str, 
-        retriever: Neo4jVector,
-        return_also_raw_answer: bool = False
-    ) -> str | Tuple[str, str]:
+    question: str, 
+    retriever: Neo4jVector,
+    return_also_raw_answer: bool = False,
+    ship_headers: bool = False
+) -> str | Tuple[str, str]:
     """Get an answer from Retriever"""
     answer_nodes = retriever.similarity_search(
         query = question,
@@ -65,13 +67,26 @@ def retriever_answer(
     )
     answer_nodes = [node.page_content for node in answer_nodes]
 
-    answer = add_retirver_answer_to_question(question, answer_nodes)
+    answer = add_retirver_answer_to_question(question, answer_nodes, ship_headers)
 
     if return_also_raw_answer:
-        raw_answer = transform_answer_list(answer_nodes)
+        raw_answer = transform_answer_list(answer_nodes, ship_headers)
         return answer, raw_answer
 
     return answer
+
+
+def holmes_retriever_chain(graph: Neo4jGraph, model: ChatOllama):
+    chain = GraphCypherQAChain.from_llm(
+        llm = model,
+        graph = graph,
+        verbose = True,
+        cypher_prompt = CYPHER_GENERATION_PROMPT,
+        use_function_response = True,
+        function_response_system = SYSTEM_PROMPT.content,
+        allow_dangerous_requests = True
+    )
+    return chain
 
 
 def get_runnable_chain(model):

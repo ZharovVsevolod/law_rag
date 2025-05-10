@@ -6,7 +6,7 @@ import uvicorn
 from fastapi import FastAPI, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 
-from law_rag.knowledge.db_connection import langchain_embeddings
+from law_rag.knowledge.db_connection import langchain_neo4j_vector
 from law_rag.models.llm_wrapper import (
     get_llm_model, 
     get_runnable_chain, 
@@ -46,9 +46,12 @@ async def websocket_endpoint(websocket: WebSocket):
 
     model = get_llm_model(
         model_type = Settings.models.llm_model_type,
-        engine = Settings.models.llm_engine
+        engine = Settings.models.llm_engine,
+        inside_docker_container = False
     )
-    vector_graph = langchain_embeddings()
+    
+    vector_graph_naive = langchain_neo4j_vector("naive")
+    vector_graph_holmes = langchain_neo4j_vector("holmes")
 
     runnable_with_history = get_runnable_chain(model)
     session_id = generate_hex()
@@ -59,11 +62,36 @@ async def websocket_endpoint(websocket: WebSocket):
         message = ast.literal_eval(data)["message"]
 
         # RAG system
-        retriever_message, raw_retriever_message = retriever_answer(
-            question = message,
-            retriever = vector_graph,
-            return_also_raw_answer = True
-        )
+        match Settings.web.mode:
+            case "all":
+                retriever_message_naive, raw_retriever_message_naive = retriever_answer(
+                    question = message,
+                    retriever = vector_graph_naive,
+                    return_also_raw_answer = True
+                )
+                retriever_message_holmes, raw_retriever_message_holmes = retriever_answer(
+                    question = message,
+                    retriever = vector_graph_holmes,
+                    return_also_raw_answer = True,
+                    ship_headers = True
+                )
+                retriever_message = retriever_message_naive + "\n\n" + retriever_message_holmes
+                raw_retriever_message = raw_retriever_message_naive + "\n\n" + raw_retriever_message_holmes
+            
+            case "naive":
+                retriever_message, raw_retriever_message = retriever_answer(
+                    question = message,
+                    retriever = vector_graph_naive,
+                    return_also_raw_answer = True
+                )
+
+            case "holmes":
+                retriever_message, raw_retriever_message = retriever_answer(
+                    question = message,
+                    retriever = vector_graph_holmes,
+                    return_also_raw_answer = True,
+                    ship_headers = True
+                )
 
         await websocket.send_json({
             "event": "rag_system",
@@ -79,20 +107,11 @@ async def websocket_endpoint(websocket: WebSocket):
 
 
 if __name__ == "__main__":
-    # Logging point
-    logging.basicConfig(
-        filename = Settings.system.logging_file,
-        encoding = "utf-8",
-        filemode = "w+t",
-        level = Settings.system.logging_level
-    )
-    logger = logging.getLogger(__name__)
-
     load_dotenv()
 
     # API application
     uvicorn.run(
-        app, 
+        app = app, 
         host = Settings.api.host, 
         port = Settings.api.port
     )

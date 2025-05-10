@@ -11,3 +11,4 @@ from . import db_manager
 # Other important scripts
 from . import config
 from . import build_graph
+from . import holmes_build_graph

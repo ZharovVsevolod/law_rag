@@ -22,11 +22,14 @@ if [ ! -f "$INIT_FLAG" ]; then
   # Set up the database
   echo "[Init] Set up the database"
   docker exec -it api_c python law_rag/build_graph.py
+  
+  echo "[Init] Set up triplets in the database"
+  docker exec -it api_c python law_rag/holmes_build_graph.py
 
   # Download the model
   # It should be matched with the model in config file
   echo "[Init] Download the model"
-  docker exec -it ollama_c ollama pull gemma2
+  docker exec -it ollama_c ollama pull gemma3:4b
 
   echo "[Init] Setup done."
   touch "$INIT_FLAG"

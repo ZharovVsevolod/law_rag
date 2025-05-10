@@ -1,4 +1,5 @@
 from langchain.schema import SystemMessage, AIMessage
+from langchain_core.prompts.prompt import PromptTemplate
 from typing import List
 
 # ------------
@@ -33,22 +34,33 @@ ERROR_MESSAGE: str = "Упс! Кажется, что-то пошло не так
 
 def add_retirver_answer_to_question(
     question: str,
-    retriever_answer: List[str]
+    retriever_answer: List[str],
+    ship_headers: bool = False
 ) -> str:
     answer = f"Вопрос пользователя: {question}\n\n"
     answer += "#####\n"
     answer += "Дополнительный контекст (Retriever)\n"
     answer += "-----------------------------------\n\n"
-    answer += transform_answer_list(retriever_answer)
+    answer += transform_answer_list(retriever_answer, ship_headers)
     answer += "\n#####"
     return answer
 
 
-def transform_answer_list(retriever_answer: List[str]) -> str:
+def transform_answer_list(
+    retriever_answer: List[str], 
+    ship_headers: bool = False
+) -> str:
     answer = ""
     for i, node in enumerate(retriever_answer):
-        answer += f"### Документ {i + 1}\n{node}\n\n"
-    answer = answer[:-2] # Remove the last \n\n
+        if ship_headers:
+            answer += f"{node}  \n"
+        
+        else:
+            answer += f"### Документ {i + 1}\n"
+            answer += f"{node}\n"
+            answer += "\n"
+    
+    answer = answer[:-1] # Remove the last \n
     return answer
 
 
@@ -96,4 +108,34 @@ So you should check:
 "subject": "Glennville Hotel Company", "relation": "directors", "object": "местные бизнесмены"
 "subject": "отель «Гленнванис»", "relation": "combines", "object": "Glennville и Kiwanis"}
 """
+)
+
+# https://python.langchain.com/docs/integrations/graphs/neo4j_cypher/
+CYPHER_GENERATION_TEMPLATE = """Task:Generate Cypher statement to query a graph database.
+Instructions:
+Use only the provided relationship types and properties in the schema.
+Do not use any other relationship types or properties that are not provided.
+Schema:
+{schema}
+Note: Do not include any explanations or apologies in your responses.
+Do not respond to any questions that might ask anything else than for you to construct a Cypher statement.
+Do not include any text except the generated Cypher statement.
+
+**NOTE**: The below given question and Database will be in Russian language. So you should extract russian entities from the database! But the relationship have to be in english (because it will be used in Neo4j database).
+So you should check:
+1) subject should be in russian language as it mention in text;
+2) relationship should be translated to english language beacuse of Neo4j connection;
+3) object should be in russian langugage as it mention in text.
+
+Examples: Here are a few examples of generated Cypher statements for particular questions:
+# Что такое информация?
+MATCH (n:Entity {{name:"информация"}})-[r]->(a)
+RETURN n, r, a
+
+The question is:
+{question}"""
+
+CYPHER_GENERATION_PROMPT = PromptTemplate(
+    input_variables = ["schema", "question"], 
+    template = CYPHER_GENERATION_TEMPLATE
 )

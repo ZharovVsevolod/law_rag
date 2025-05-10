@@ -1,15 +1,16 @@
 """
 Make the connection with database instance
 """
-
 import os
 
 from neo4j import GraphDatabase, Driver
 from langchain_neo4j import Neo4jGraph, Neo4jVector
 
 from law_rag.models.embeddings_wrapper import get_embeddings
-from law_rag.knowledge.commands import retrieval_query
+from law_rag.knowledge.commands import retrieval_query, holmes_retrieval_query
 from law_rag.config import Settings
+
+from typing import Literal
 
 from dotenv import load_dotenv
 
@@ -75,22 +76,41 @@ def langchain_neo4j_connection() -> Neo4jGraph:
 
 
 # https://python.langchain.com/docs/integrations/vectorstores/neo4jvector/
-def langchain_neo4j_vector() -> Neo4jVector:
-    vector_graph = Neo4jVector.from_existing_graph(
-        embedding = get_embeddings(),
+def langchain_neo4j_vector(mode: Literal["naive", "holmes"]) -> Neo4jVector:
+    match mode:
+        case "naive":
+            vector_graph = Neo4jVector.from_existing_graph(
+                embedding = get_embeddings(),
 
-        url = Settings.system.neo4j_base_url,
-        username = os.environ["DB_NAME"],
-        password = os.environ["DB_PASSWORD"],
+                url = Settings.system.neo4j_base_url,
+                username = os.environ["DB_NAME"],
+                password = os.environ["DB_PASSWORD"],
 
-        index_name = Settings.data.index_name,
-        node_label = Settings.data.embeddings_label,
-        text_node_properties = ["text", "name"],
-        embedding_node_property = Settings.data.embeddings_parameter,
+                index_name = Settings.data.index_name,
+                node_label = Settings.data.embeddings_label,
+                text_node_properties = ["text", "name"],
+                embedding_node_property = Settings.data.embeddings_parameter,
 
-        search_type = "hybrid",
-        retrieval_query = retrieval_query()
-    )
+                search_type = "hybrid",
+                retrieval_query = retrieval_query()
+            )
+        
+        case "holmes":
+            vector_graph = Neo4jVector.from_existing_graph(
+                embedding = get_embeddings(),
+
+                url = Settings.system.neo4j_base_url,
+                username = os.environ["DB_NAME"],
+                password = os.environ["DB_PASSWORD"],
+
+                index_name = Settings.data.holmes_index_name,
+                node_label = Settings.data.holmes_node,
+                text_node_properties = ["name"],
+                embedding_node_property = Settings.data.embeddings_parameter,
+
+                retrieval_query = holmes_retrieval_query()
+            )
+
     return vector_graph
 
 

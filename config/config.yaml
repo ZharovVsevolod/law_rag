@@ -21,19 +21,21 @@ data:
   embeddings_label: ForEmbeddings
   embeddings_parameter: embeddings
   index_name: node_embeddings
+  holmes_node: Entity
+  holmes_index_name: holmes_embeddings
 
 system:
   silent_creation: False
   logging_file: "somelogs.log"
-  logging_level: 20 # Info level
+  logging_level: 20 # LEVELS: 10 - Debug, 20 - Info, 30 - Warning, 40 - Error, 50 - Critical Error
   ollama_base_url: "http://ollama-container:11434"
-  neo4j_base_url: "bolt://neo4j:7687"
+  neo4j_base_url: "bolt://localhost:7687" # "bolt://neo4j:7687"
 
 models:
   embeddings_model: "intfloat/multilingual-e5-large-instruct"
   embeddings_dimension: 1024
   similarity_function: cosine
-  llm_model_type: "gemma3:4b"
+  llm_model_type: "gemma3:4b" # "qwen3:8b", "deepseek-r1:8b", "gemma3:4b", "gemma2"
   llm_engine: ollama
 
 api:
@@ -43,3 +45,4 @@ api:
 web:
   run_name: Alice
   path_to_history: "data/hot_history/"
+  mode: "all" # "all", "naive", "holmes"

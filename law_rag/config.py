@@ -45,6 +45,8 @@ class Data(BaseModel):
     embeddings_label: str
     embeddings_parameter: str
     index_name: str
+    holmes_node: str
+    holmes_index_name: str
 
 class System(BaseModel):
     silent_creation: bool
@@ -68,6 +70,7 @@ class Api(BaseModel):
 class WebCfg(BaseModel):
     run_name: str
     path_to_history: str
+    mode: Literal["all", "naive", "holmes"]
 
 class Config(BaseModel):
     documents: Docs

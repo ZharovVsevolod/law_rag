@@ -3,14 +3,8 @@ There is stored some functions for preparing the chunks (in Langchain Document t
 """
 from law_rag.documents.md_parser import find_all_markdown_links
 from law_rag.knowledge.node_schema import Node, Article, Paragraph, Subparagraph
-from law_rag.models.blanks import HOLMES_SYSTEM_GET_TRIPLETS
 from law_rag.config import Settings
 
-from langchain.schema import HumanMessage
-
-from langchain_core.runnables.base import RunnableSerializable
-from langchain_core.language_models.chat_models import BaseChatModel
-from langchain.schema import AIMessage
 from langchain_core.documents import Document
 from typing import Dict, Literal, Tuple, List
 
@@ -194,17 +188,3 @@ def get_chunk_number(
 
 
     return chunk_number, previous, parent_number
-
-
-def get_triplets_from_text(
-    text: str | Document,
-    chain: BaseChatModel | RunnableSerializable
-) -> AIMessage | List[Dict[str, str]]:
-    if type(text) is Document:
-        text = text.page_content
-
-    human_message = HumanMessage(text)
-    messages = [HOLMES_SYSTEM_GET_TRIPLETS, human_message]
-
-    answer = chain.invoke(messages)
-    return answer

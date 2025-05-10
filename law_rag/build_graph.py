@@ -8,7 +8,7 @@ from law_rag.knowledge.commands import (
     create_node_command, 
     create_parent_relationship, 
     create_previous_relationship,
-    delete_all_nodes,
+    delete_nodes,
     delete_index,
     create_embeddings_label
 )
@@ -53,8 +53,8 @@ def build_graph_from_scratch() -> None:
     graph = langchain_neo4j_connection()
 
     # Clear Database
-    graph.query(delete_index())
-    graph.query(delete_all_nodes())
+    graph.query(delete_index("naive"))
+    graph.query(delete_nodes("naive"))
     if not Settings.system.silent_creation:
         print("Database was cleared for build from scratch")
         print()
@@ -144,6 +144,9 @@ def build_graph_from_scratch() -> None:
     )
     graph.query(command)
 
+    # Update graph schema
+    graph.refresh_schema()
+
     # Close the connection because we need another connection instance 
     # for creating an embeddings
     graph.close()
@@ -159,7 +162,7 @@ def build_embeddings():
         print(f"Model: {Settings.models.embeddings_model}")
         print("Please, wait...")
     
-    vector_graph = langchain_neo4j_vector()
+    vector_graph = langchain_neo4j_vector("naive")
 
     if not Settings.system.silent_creation:
         print("Embeddings was created and/or loaded")

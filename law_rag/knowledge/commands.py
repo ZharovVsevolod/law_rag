@@ -1,26 +1,49 @@
 """
 Cypher commands for Neo4j Database
 """
-
 # Cheet Sheet for Cypher commands
 # https://neo4j.com/docs/cypher-cheat-sheet/5/all/#_merge
 
 from law_rag.knowledge.node_schema import Node
 from law_rag.knowledge.node_schema import get_parent_type
 from law_rag.config import Settings
-from typing import List, Literal
+
+from typing import List, Literal, Dict
 
 # -----------------
 # Creation commands
 # -----------------
 
-def delete_index() -> str:
-    command = f"""
-    DROP INDEX `{Settings.data.index_name}` IF EXISTS
-    """
+def merge_command(
+    node_name: str,
+    node_type: str,
+    param_name: str,
+    param_value: str
+) -> str:
+    command = f"MERGE ({node_name}:{node_type}" + " {" + f'{param_name}: "{param_value}"' + "})\n"
     return command
 
-def delete_all_nodes() -> str:
+def delete_index(
+    mode: Literal["all", "naive", "holmes"] = "all"
+) -> str:
+    match mode:
+        case "all":
+            command = f"""
+            DROP INDEX `{Settings.data.index_name}` IF EXISTS
+            DROP INDEX `{Settings.data.holmes_index_name}` IF EXISTS
+            """
+
+        case "naive":
+            command = f"DROP INDEX `{Settings.data.index_name}` IF EXISTS"
+        
+        case "holmes":
+            command = f"DROP INDEX `{Settings.data.holmes_index_name}` IF EXISTS"
+
+    return command
+
+def delete_nodes(
+    mode: Literal["all", "naive", "holmes"] = "all"
+) -> str:
     """A Cypher command to clear all the graph and delete all nodes in it
     
     Command:
@@ -30,11 +53,28 @@ def delete_all_nodes() -> str:
     DELETE n,r
     ```
     """
-    command = """
-    OPTIONAL MATCH (n)
-    OPTIONAL MATCH (n)-[r]-()
-    DELETE n,r
-    """
+    match mode:
+        case "all":
+            command = """
+            OPTIONAL MATCH (n)
+            OPTIONAL MATCH (n)-[r]-()
+            DELETE n,r
+            """
+
+        case "naive":
+            command = f"""
+            OPTIONAL MATCH (n:Codex|Article|Paragraph|Subparagraph)
+            OPTIONAL MATCH (n)-[r]-()
+            DELETE n,r
+            """
+        
+        case "holmes":
+            command = f"""
+            MATCH (n:{Settings.data.holmes_node})
+            OPTIONAL MATCH (n)-[r]-()
+            DELETE n,r
+            """
+    
     return command
 
 def create_node_command(node: Node) -> str:
@@ -61,7 +101,7 @@ def create_node_command(node: Node) -> str:
     """
     # Merge the Node with the first paramets - key value
     key_name, key_value = node.primal_key()
-    command = f"MERGE (n:{node.type}" + " {" + f'{key_name}: "{key_value}"' + "})\n"
+    command = merge_command("n", node.type, key_name, key_value)
 
     # Set of parameters that do not need to set. 
     # Primal key is set already, system parameter do not need to set at all
@@ -83,7 +123,6 @@ def create_node_command(node: Node) -> str:
     
     return command
 
-
 def create_previous_relationship(node: Node) -> str:
     """A command to create relationship `NEXT` based on current node number and previous one.
 
@@ -99,15 +138,14 @@ def create_previous_relationship(node: Node) -> str:
         return "None"
 
     key_name, key_value = node.primal_key()
-    command = f"MERGE (n:{node.type}" + " {" + f'{key_name}: "{key_value}"' + "})\n"
+    command = merge_command("n", node.type, key_name, key_value)
 
     previous_value = node.previous
-    command += f"MERGE (n_prev:{node.type}" + " {" + f'{key_name}: "{previous_value}"' + "})\n"
+    command += merge_command("n_prev", node.type, key_name, previous_value)
 
     command += "MERGE (n_prev)-[r:NEXT]->(n)\n"
     
     return command
-
 
 def create_parent_relationship(node: Node) -> str:
     """A command to create relationship `PART_OF` to the higher on hierarchy node.
@@ -121,16 +159,15 @@ def create_parent_relationship(node: Node) -> str:
     ```
     """
     key_name, key_value = node.primal_key()
-    command = f"MERGE (n:{node.type}" + " {" + f'{key_name}: "{key_value}"' + "})\n"
+    command = merge_command("n", node.type, key_name, key_value)
 
     parent_type = get_parent_type(node)
 
     if node.parent is not None:
-        command += f"MERGE (n_p:{parent_type}" + " {" + f'{key_name}: "{node.parent}"' + "})\n"
+        command += merge_command("n_p", parent_type, key_name, node.parent)
         command += f"MERGE (n)-[r:PART_OF]->(n_p)\n"
     
     return command
-
 
 # Because there are no variants to create a vector index in Neo4j for multiple labels, we unite this labels
 # https://stackoverflow.com/questions/79578894/can-i-create-one-vector-index-for-multiple-labels-e-g-movie-and-person
@@ -144,7 +181,6 @@ def create_embeddings_label(
     SET n:{union_label}
     """
     return command
-
 
 def create_index_embeddings() -> str:
     """
@@ -169,6 +205,20 @@ def create_index_embeddings() -> str:
     """
     return command
 
+def holmes_nodes_creation(entity: Dict[str, str]) -> str:
+    """
+    **(!NB)** Need an `entity` additional parameter, Dict wich contains
+    - subject
+    - relation
+    - object
+
+    fields
+    """
+    command = merge_command("s", Settings.data.holmes_node, "name", entity["subject"])
+    command += merge_command("o", Settings.data.holmes_node, "name", entity["object"])
+    command += f"MERGE (s) -[r:{entity["relation"]}]->(o)"
+    return command
+
 # --------------
 # Retrieval part
 # --------------
@@ -191,5 +241,20 @@ def retrieval_query() -> str:
         coalesce(nextDoc.text, '') as text,
         similarity as score,
         {source: document.number} AS metadata
+    """
+    return command
+
+def holmes_retrieval_query() -> str:
+    command = """
+    WITH node AS doc, score as similarity
+    ORDER BY similarity DESC LIMIT 3
+    CALL(doc) {
+        OPTIONAL MATCH (doc)-[r]-(another)
+        RETURN doc AS entity, r, another as connected_entity
+    }
+    RETURN
+        coalesce(entity.name + ' -' + type(r) + '-> ' + connected_entity.name, '') as text,
+        similarity as score,
+        {main: entity.name} AS metadata
     """
     return command
