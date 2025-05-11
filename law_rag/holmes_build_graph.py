@@ -56,23 +56,6 @@ def build_embeddings():
         )
         print(answer)
 
-        # -------
-        # Cypher queries usually are the same and user may not be so kind
-        # to provide exacly how the entity is named in database, so
-        # it is a little bit not nessesary in this scenario
-        # -------
-        # chain = holmes_retriever_chain(
-        #     graph = langchain_neo4j_connection(),
-        #     model = get_llm_model(
-        #         model_type = Settings.models.llm_model_type,
-        #         engine = Settings.models.llm_engine,
-        #         inside_docker_container = False # Development: Delete this line for True value
-        #     )
-        # )
-        # answer = chain.invoke("Что такое информация?")
-        # print(answer["result"])
-        # -------
-
 
 
 if __name__ == "__main__":
