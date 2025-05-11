@@ -24,10 +24,6 @@ data:
   holmes_node: Entity
   holmes_index_name: holmes_embeddings
 
-qa_dataset:
-  num_questions_per_chunk: 2
-  path_to_save: "data/build/qa_dataset.pkl"
-
 system:
   silent_creation: False
   logging_file: "somelogs.log"

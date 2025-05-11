@@ -1,0 +1,7 @@
+qa_dataset:
+  num_questions_per_chunk: 2
+  path_to_save: "dataset/data/qa_dataset.pkl"
+  answers_save_path: "dataset/data/answers/answers.pkl"
+  raw_save_path: "dataset/data/answers/raw.pkl"
+  path_to_full_save_csv: "dataset/data/answers/qa_dataset_with_answers.csv"
+  path_to_results: "dataset/data/results.csv"

@@ -5,7 +5,6 @@ Most of the time you'll need the `Settings` variable with configuration specific
 
 You can run this .py file to print the config file and check if it is loaded correctly.
 """
-
 from pathlib import Path
 from pydantic import BaseModel
 from omegaconf import OmegaConf, DictConfig
@@ -28,13 +27,13 @@ class Docs(BaseModel):
     path_to_md_cleaned: str
     holmes_pickle: str
 
-    def pdf(self, codex_name: str):
+    def pdf(self, codex_name: str) -> str:
         return self.path_to_folder + "/" + codex_name + "/" + self.path_to_pdf
     
-    def md(self, codex_name: str):
+    def md(self, codex_name: str) -> str:
         return self.path_to_folder + "/" + codex_name + "/" + self.path_to_md
 
-    def md_clean(self, codex_name: str):
+    def md_clean(self, codex_name: str) -> str:
         return self.path_to_folder + "/" + codex_name + "/" + self.path_to_md_cleaned
 
 
@@ -48,9 +47,6 @@ class Data(BaseModel):
     holmes_node: str
     holmes_index_name: str
 
-class QaDataset(BaseModel):
-    num_questions_per_chunk: int
-    path_to_save: str
 
 class System(BaseModel):
     silent_creation: bool
@@ -80,7 +76,6 @@ class WebCfg(BaseModel):
 class Config(BaseModel):
     documents: Docs
     data: Data
-    qa_dataset: QaDataset
     system: System
     models: Models
     api: Api
