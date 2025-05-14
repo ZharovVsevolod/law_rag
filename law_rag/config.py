@@ -60,7 +60,7 @@ class Models(BaseModel):
     embeddings_model: str
     embeddings_dimension: int
     similarity_function: Literal["cosine", "euclidean"]
-    llm_model_type: Literal["qwen3:8b", "deepseek-r1:8b", "gemma3:4b", "gemma2"]
+    llm_model_type: Literal["qwen3:8b", "deepseek-r1:8b", "gemma3:4b", "gemma3:27b"]
     llm_engine: Literal["ollama"]
 
 class Api(BaseModel):

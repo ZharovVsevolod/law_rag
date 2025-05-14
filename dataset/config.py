@@ -7,7 +7,7 @@ from typing import Literal
 
 # Get the path to the yaml config file
 pwd = Path(__file__).parent.parent
-dataset_config_file = pwd / "dataset" / "config" / "config.yaml"
+dataset_config_file = pwd / "config" / "config.yaml"
 
 class QaDatasetConfig(BaseModel):
     num_questions_per_chunk: int

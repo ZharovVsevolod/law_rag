@@ -19,7 +19,7 @@ from langchain_core.runnables.base import RunnableSerializable
 from typing import Literal, Tuple
 
 def get_llm_model(
-    model_type: Literal["qwen3:8b", "deepseek-r1:8b", "gemma3:4b", "gemma2"],
+    model_type: Literal["qwen3:8b", "deepseek-r1:8b", "gemma3:4b", "gemma3:27b"],
     engine: Literal["ollama"] = "ollama",
     answer_parser: Literal["none", "json", "string"] = "none",
     inside_docker_container: bool = True
