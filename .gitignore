@@ -10,5 +10,4 @@ development/
 checks/
 
 # Docker volumes
-data/hot_history/
 volumes/

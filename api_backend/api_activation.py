@@ -46,8 +46,7 @@ async def websocket_endpoint(websocket: WebSocket):
 
     model = get_llm_model(
         model_type = Settings.models.llm_model_type,
-        engine = Settings.models.llm_engine,
-        inside_docker_container = False
+        engine = Settings.models.llm_engine
     )
     
     vector_graph_naive = langchain_neo4j_vector("naive")
